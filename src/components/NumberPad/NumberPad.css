@@ -1,0 +1,69 @@
+.numpad {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: var(--board-size);
+}
+
+.numpad-row {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+}
+
+.numpad-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  flex: 1;
+  max-width: 60px;
+  min-height: 56px;
+  border: none;
+  border-radius: 10px;
+  background: var(--color-numpad-bg);
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.08s, background 0.1s;
+  padding: 6px 0;
+}
+
+.numpad-btn:active:not(:disabled) {
+  transform: scale(0.93);
+  background: var(--color-numpad-active);
+}
+
+.numpad-btn--exhausted {
+  opacity: 0.25;
+  pointer-events: none;
+}
+
+.numpad-btn--erase {
+  background: var(--color-numpad-erase);
+}
+
+.numpad-dots {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+  justify-content: center;
+  min-height: 8px;
+}
+
+.numpad-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  opacity: 0.6;
+}
+
+.numpad-digit {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1;
+}

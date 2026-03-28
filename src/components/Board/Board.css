@@ -1,0 +1,86 @@
+.board {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  grid-template-rows: repeat(9, 1fr);
+  width: var(--board-size);
+  height: var(--board-size);
+  border: 2.5px solid var(--color-board-border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--color-board-border);
+  gap: 0;
+  flex-shrink: 0;
+}
+
+.cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-cell-bg);
+  border: 0.5px solid var(--color-cell-border);
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+  transition: background 0.1s;
+}
+
+.cell--box-left {
+  border-left: 2px solid var(--color-board-border);
+}
+
+.cell--box-top {
+  border-top: 2px solid var(--color-board-border);
+}
+
+.cell--selected {
+  background: var(--color-selected);
+}
+
+.cell--region {
+  background: var(--color-region);
+}
+
+.cell--same-value {
+  background: var(--color-same-value);
+}
+
+.cell--conflict {
+  background: var(--color-conflict-bg);
+}
+
+.cell--conflict .cell-value {
+  color: var(--color-conflict-text);
+}
+
+.cell--given {
+  font-weight: 700;
+}
+
+.cell--given .cell-value {
+  color: var(--color-text);
+}
+
+.cell-value {
+  font-size: calc(var(--board-size) / 22);
+  color: var(--color-primary);
+  line-height: 1;
+}
+
+.cell-notes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  width: 100%;
+  height: 100%;
+  padding: 1px;
+}
+
+.cell-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(var(--board-size) / 55);
+  color: var(--color-text-secondary);
+  line-height: 1;
+}

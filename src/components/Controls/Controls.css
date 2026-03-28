@@ -1,0 +1,55 @@
+.actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  width: 100%;
+  max-width: var(--board-size);
+}
+
+.action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+  max-width: 80px;
+  padding: 8px 4px;
+  border: none;
+  border-radius: 10px;
+  background: var(--color-action-bg);
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.08s, background 0.1s;
+}
+
+.action-btn:active:not(:disabled) {
+  transform: scale(0.93);
+}
+
+.action-btn:disabled {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.action-btn--active {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.action-btn--active .action-label {
+  color: #fff;
+}
+
+.action-icon {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.action-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}

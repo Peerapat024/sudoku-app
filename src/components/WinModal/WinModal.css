@@ -1,0 +1,88 @@
+.win-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 24px;
+  animation: fadeIn 0.3s ease;
+}
+
+.win-modal {
+  background: var(--color-bg);
+  border-radius: 20px;
+  padding: 32px 24px;
+  text-align: center;
+  width: 100%;
+  max-width: 320px;
+  animation: slideUp 0.3s ease;
+}
+
+.win-title {
+  font-size: 1.5rem;
+  margin: 0 0 4px;
+}
+
+.win-difficulty {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  margin: 0 0 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.win-time {
+  font-size: 2.5rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-primary);
+  margin: 0 0 4px;
+}
+
+.win-best {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  margin: 0 0 24px;
+}
+
+.win-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.win-btn {
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.win-btn:active {
+  transform: scale(0.97);
+}
+
+.win-btn--primary {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.win-btn--secondary {
+  background: var(--color-action-bg);
+  color: var(--color-text);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
