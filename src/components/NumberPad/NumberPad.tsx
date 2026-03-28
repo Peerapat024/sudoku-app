@@ -36,10 +36,6 @@ export default function NumberPad() {
             onTap={handleTap}
           />
         ))}
-        <button className="numpad-btn numpad-btn--erase" onClick={handleErase}>
-          <span className="numpad-dots" />
-          <span className="numpad-digit">⌫</span>
-        </button>
       </div>
     </div>
   );
