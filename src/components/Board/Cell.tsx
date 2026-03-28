@@ -1,3 +1,4 @@
+import { useWebHaptics } from 'web-haptics/react';
 import { Cell as CellType } from '../../types';
 import './Board.css';
 
@@ -20,6 +21,7 @@ export default function Cell({
   isSameValue,
   onSelect,
 }: CellProps) {
+  const { trigger } = useWebHaptics();
   const classNames = ['cell'];
 
   if (isSelected) classNames.push('cell--selected');
@@ -36,7 +38,7 @@ export default function Cell({
   return (
     <div
       className={classNames.join(' ')}
-      onClick={() => onSelect(row, col)}
+      onClick={() => { trigger('selection'); onSelect(row, col); }}
     >
       {cell.value !== 0 ? (
         <span className="cell-value">{cell.value}</span>
