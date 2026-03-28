@@ -47,10 +47,18 @@
 
 .numpad-dots {
   display: flex;
-  gap: 3px;
+  flex-direction: column;
+  gap: 2px;
   align-items: center;
   justify-content: center;
   min-height: 8px;
+}
+
+.numpad-dots-row {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+  justify-content: center;
 }
 
 .numpad-dot {

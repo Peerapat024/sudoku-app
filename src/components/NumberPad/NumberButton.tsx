@@ -16,11 +16,22 @@ export default function NumberButton({ digit, remaining, onTap }: NumberButtonPr
       disabled={exhausted}
     >
       <span className="numpad-dots">
-        {remaining > 0
-          ? Array.from({ length: remaining }, (_, i) => (
-              <span key={i} className="numpad-dot" />
-            ))
-          : null}
+        {remaining > 0 && (
+          <>
+            <span className="numpad-dots-row">
+              {Array.from({ length: Math.min(remaining, 5) }, (_, i) => (
+                <span key={i} className="numpad-dot" />
+              ))}
+            </span>
+            {remaining > 5 && (
+              <span className="numpad-dots-row">
+                {Array.from({ length: remaining - 5 }, (_, i) => (
+                  <span key={i} className="numpad-dot" />
+                ))}
+              </span>
+            )}
+          </>
+        )}
       </span>
       <span className="numpad-digit">{digit}</span>
     </button>

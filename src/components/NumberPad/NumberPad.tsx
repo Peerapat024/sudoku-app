@@ -11,11 +11,7 @@ export default function NumberPad() {
     dispatch({ type: 'SET_VALUE', value: digit });
   }
 
-  function handleErase() {
-    dispatch({ type: 'ERASE' });
-  }
-
-  return (
+return (
     <div className="numpad">
       <div className="numpad-row">
         {[1, 2, 3, 4, 5].map(d => (
