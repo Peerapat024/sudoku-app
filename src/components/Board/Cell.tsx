@@ -37,6 +37,10 @@ export default function Cell({ cell, row, col, isSelected, isRegionHighlight, is
   if (cell.isGiven) classNames.push('cell--given');
   if (col % 3 === 0 && col !== 0) classNames.push('cell--box-left');
   if (row % 3 === 0 && row !== 0) classNames.push('cell--box-top');
+  if (row === 0 && col === 0) classNames.push('cell--corner-tl');
+  if (row === 0 && col === 8) classNames.push('cell--corner-tr');
+  if (row === 8 && col === 0) classNames.push('cell--corner-bl');
+  if (row === 8 && col === 8) classNames.push('cell--corner-br');
 
   return (
     <div

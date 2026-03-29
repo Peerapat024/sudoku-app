@@ -84,6 +84,12 @@
   animation: cellPop 0.22s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
+/* ── Corner rounding to match board border-radius ──────────────────────── */
+.cell--corner-tl { border-radius: 13px 0 0 0; }
+.cell--corner-tr { border-radius: 0 13px 0 0; }
+.cell--corner-bl { border-radius: 0 0 0 13px; }
+.cell--corner-br { border-radius: 0 0 13px 0; }
+
 /* ── Notes grid ─────────────────────────────────────────────────────────── */
 .cell-notes {
   display: grid;
