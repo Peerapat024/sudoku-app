@@ -32,13 +32,13 @@
   position: relative;
 
   /* Gradient face of the key */
-  background: linear-gradient(180deg, #22223a 0%, #1a1a2e 100%);
+  background: linear-gradient(180deg, #202020 0%, #181818 100%);
 
   /* 3-D shadow — bottom edge of key */
   box-shadow:
-    0 4px 0 #09090f,
-    0 0 0 1px #28284a,
-    inset 0 1px 0 rgba(255,255,255,0.06);
+    0 4px 0 #050505,
+    0 0 0 1px #2c2c2c,
+    inset 0 1px 0 rgba(255,255,255,0.07);
 
   /* Fast press transition */
   transition: transform 55ms ease, box-shadow 55ms ease;
@@ -48,8 +48,8 @@
 .numpad-btn:active:not(:disabled) {
   transform: translateY(3px);
   box-shadow:
-    0 1px 0 #09090f,
-    0 0 0 1px #28284a,
+    0 1px 0 #050505,
+    0 0 0 1px #2c2c2c,
     inset 0 1px 0 rgba(255,255,255,0.03);
 }
 
@@ -62,7 +62,7 @@
 .numpad-digit {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #dcdcf0;
+  color: #f0f0f0;
   line-height: 1;
   letter-spacing: -0.02em;
 }
@@ -88,6 +88,6 @@
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: #0a84ff;
-  opacity: 0.7;
+  background: #888888;
+  opacity: 0.8;
 }

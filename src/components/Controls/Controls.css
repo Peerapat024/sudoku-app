@@ -21,11 +21,11 @@
   user-select: none;
   -webkit-tap-highlight-color: transparent;
 
-  background: linear-gradient(180deg, #22223a 0%, #1a1a2e 100%);
+  background: linear-gradient(180deg, #202020 0%, #181818 100%);
   box-shadow:
-    0 3px 0 #09090f,
-    0 0 0 1px #28284a,
-    inset 0 1px 0 rgba(255,255,255,0.05);
+    0 3px 0 #050505,
+    0 0 0 1px #2c2c2c,
+    inset 0 1px 0 rgba(255,255,255,0.06);
 
   transition: transform 55ms ease, box-shadow 55ms ease, background 0.15s;
 }
@@ -33,8 +33,8 @@
 .action-btn:active:not(:disabled) {
   transform: translateY(2px);
   box-shadow:
-    0 1px 0 #09090f,
-    0 0 0 1px #28284a;
+    0 1px 0 #050505,
+    0 0 0 1px #2c2c2c;
 }
 
 .action-btn:disabled {
@@ -43,16 +43,19 @@
 }
 
 .action-btn--active {
-  background: linear-gradient(180deg, #0a64c8 0%, #0856a8 100%);
+  background: linear-gradient(180deg, #e8e8e8 0%, #c8c8c8 100%);
   box-shadow:
-    0 3px 0 #03305a,
-    0 0 0 1px #0a84ff,
-    0 0 16px rgba(10, 132, 255, 0.25),
-    inset 0 1px 0 rgba(255,255,255,0.15);
+    0 3px 0 #505050,
+    0 0 0 1px #c0c0c0,
+    inset 0 1px 0 rgba(255,255,255,0.4);
+}
+
+.action-btn--active .action-icon {
+  filter: invert(1);
 }
 
 .action-btn--active .action-label {
-  color: rgba(255,255,255,0.9);
+  color: #333333;
 }
 
 .action-icon {
@@ -63,7 +66,7 @@
 .action-label {
   font-size: 0.65rem;
   font-weight: 700;
-  color: #60607a;
+  color: #686868;
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }

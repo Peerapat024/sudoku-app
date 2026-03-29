@@ -1,23 +1,23 @@
 /* ── Design tokens — always dark ────────────────────────────────────────── */
 :root {
-  --bg:               #0c0c14;
-  --color-bg:         #0c0c14;
-  --color-text:       #e8e8f4;
-  --color-text-secondary: #60607a;
-  --color-primary:    #0a84ff;
-  --color-board-border: #2e2e4a;
-  --color-cell-bg:    #14141e;
-  --color-cell-border: #1c1c2c;
-  --color-selected:   #0a2855;
-  --color-region:     #18182a;
-  --color-same-value: #0d2040;
-  --color-conflict-bg:   #280a0a;
+  --bg:               #0a0a0a;
+  --color-bg:         #0a0a0a;
+  --color-text:       #f0f0f0;
+  --color-text-secondary: #606060;
+  --color-primary:    #d0d0d0;
+  --color-board-border: #282828;
+  --color-cell-bg:    #111111;
+  --color-cell-border: #1c1c1c;
+  --color-selected:   #2c2c2c;
+  --color-region:     #191919;
+  --color-same-value: #212121;
+  --color-conflict-bg:   #1e0a0a;
   --color-conflict-text: #ff453a;
-  --color-border:        #1e1e30;
-  --color-border-light:  #16162a;
-  --color-numpad-bg:     #1c1c2a;
-  --color-numpad-active: #24243a;
-  --color-action-bg:     #1a1a28;
+  --color-border:        #1e1e1e;
+  --color-border-light:  #141414;
+  --color-numpad-bg:     #1a1a1a;
+  --color-numpad-active: #242424;
+  --color-action-bg:     #181818;
 
   --board-size: min(95vw, 50vh);
 }
