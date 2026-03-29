@@ -48,7 +48,26 @@ export function generatePuzzle(difficulty: Difficulty): {
     }
   }
 
+  // Apply a random digit relabeling (e.g. swap all 1s↔7s, etc.)
+  // This guarantees visually distinct puzzles even if the same structure is generated
+  const relabel = shuffled([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+  const map = new Map<number, number>();
+  for (let i = 0; i < 9; i++) map.set(i + 1, relabel[i]);
+
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) {
+      if (solution[r][c] !== 0) solution[r][c] = map.get(solution[r][c])!;
+      if (puzzle[r][c] !== 0) puzzle[r][c] = map.get(puzzle[r][c])!;
+    }
+  }
+
   return { puzzle, solution };
+}
+
+function shuffled<T>(arr: T[]): T[] {
+  const a = [...arr];
+  shuffleArray(a);
+  return a;
 }
 
 function shuffleArray<T>(arr: T[]): void {

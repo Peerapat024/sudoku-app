@@ -1,4 +1,5 @@
 import { useGame } from '../../context/GameContext';
+import { sounds } from '../../lib/sounds';
 import './Controls.css';
 
 export default function Actions() {
@@ -8,7 +9,7 @@ export default function Actions() {
     <div className="actions">
       <button
         className="action-btn"
-        onClick={() => dispatch({ type: 'UNDO' })}
+        onClick={() => { sounds.undo(); dispatch({ type: 'UNDO' }); }}
         disabled={state.history.length <= 1 || state.isComplete}
       >
         <span className="action-icon">↩</span>
@@ -17,7 +18,7 @@ export default function Actions() {
 
       <button
         className={`action-btn ${state.isNotesMode ? 'action-btn--active' : ''}`}
-        onClick={() => dispatch({ type: 'TOGGLE_NOTES_MODE' })}
+        onClick={() => { sounds.tap(); dispatch({ type: 'TOGGLE_NOTES_MODE' }); }}
         disabled={state.isComplete}
       >
         <span className="action-icon">✏</span>
@@ -26,7 +27,7 @@ export default function Actions() {
 
       <button
         className="action-btn"
-        onClick={() => dispatch({ type: 'HINT' })}
+        onClick={() => { sounds.hint(); dispatch({ type: 'HINT' }); }}
         disabled={!state.selectedCell || state.isComplete}
       >
         <span className="action-icon">💡</span>

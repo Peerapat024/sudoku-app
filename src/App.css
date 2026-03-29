@@ -1,98 +1,67 @@
+/* ── Design tokens — always dark ────────────────────────────────────────── */
 :root {
-  --color-bg: #f8fafc;
-  --color-text: #1e293b;
-  --color-text-secondary: #64748b;
-  --color-primary: #3b82f6;
-  --color-board-border: #334155;
-  --color-cell-bg: #ffffff;
-  --color-cell-border: #cbd5e1;
-  --color-selected: #93c5fd;
-  --color-region: #e2e8f0;
-  --color-same-value: #bfdbfe;
-  --color-conflict-bg: #fecaca;
-  --color-conflict-text: #dc2626;
-  --color-border: #e2e8f0;
-  --color-border-light: #f1f5f9;
-  --color-numpad-bg: #e2e8f0;
-  --color-numpad-active: #cbd5e1;
-  --color-numpad-erase: #fecaca;
-  --color-action-bg: #e2e8f0;
+  --bg:               #0c0c14;
+  --color-bg:         #0c0c14;
+  --color-text:       #e8e8f4;
+  --color-text-secondary: #60607a;
+  --color-primary:    #0a84ff;
+  --color-board-border: #2e2e4a;
+  --color-cell-bg:    #14141e;
+  --color-cell-border: #1c1c2c;
+  --color-selected:   #0a2855;
+  --color-region:     #18182a;
+  --color-same-value: #0d2040;
+  --color-conflict-bg:   #280a0a;
+  --color-conflict-text: #ff453a;
+  --color-border:        #1e1e30;
+  --color-border-light:  #16162a;
+  --color-numpad-bg:     #1c1c2a;
+  --color-numpad-active: #24243a;
+  --color-action-bg:     #1a1a28;
 
   --board-size: min(95vw, 50vh);
 }
 
 @media (max-height: 700px) {
-  :root {
-    --board-size: min(90vw, 45vh);
-  }
+  :root { --board-size: min(90vw, 45vh); }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-bg: #0f172a;
-    --color-text: #f1f5f9;
-    --color-text-secondary: #94a3b8;
-    --color-primary: #60a5fa;
-    --color-board-border: #94a3b8;
-    --color-cell-bg: #1e293b;
-    --color-cell-border: #334155;
-    --color-selected: #1e40af;
-    --color-region: #1e293b;
-    --color-same-value: #1e3a5f;
-    --color-conflict-bg: #450a0a;
-    --color-conflict-text: #f87171;
-    --color-border: #334155;
-    --color-border-light: #1e293b;
-    --color-numpad-bg: #1e293b;
-    --color-numpad-active: #334155;
-    --color-numpad-erase: #450a0a;
-    --color-action-bg: #1e293b;
-  }
-}
+/* ── Reset ──────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-html, body {
-  height: 100%;
-  overflow: hidden;
-}
+html, body { height: 100%; overflow: hidden; }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  background: var(--color-bg);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Rounded', 'Helvetica Neue', sans-serif;
+  background: var(--bg);
   color: var(--color-text);
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
-#root {
-  height: 100%;
-}
+#root { height: 100%; }
 
+button { font-family: inherit; }
+
+/* ── Game layout ────────────────────────────────────────────────────────── */
 .game {
   display: flex;
   flex-direction: column;
   align-items: center;
   height: 100dvh;
-  padding: 8px 12px;
-  padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+  padding: 12px 12px;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
   gap: 10px;
   overflow: hidden;
 }
 
+/* ── Header ─────────────────────────────────────────────────────────────── */
 .game-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
   max-width: var(--board-size);
-  padding: 4px 0;
+  padding: 2px 0;
 }
 
 .back-btn {
@@ -104,16 +73,49 @@ body {
   cursor: pointer;
   padding: 4px 0;
   -webkit-tap-highlight-color: transparent;
+  letter-spacing: -0.01em;
 }
 
 .game-difficulty {
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: 0.78rem;
+  font-weight: 700;
   color: var(--color-text-secondary);
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.12em;
 }
 
-button {
-  font-family: inherit;
+/* ── Keyframes ──────────────────────────────────────────────────────────── */
+@keyframes cellPop {
+  0%   { transform: scale(1.35); opacity: 0.7; }
+  60%  { transform: scale(0.94); }
+  100% { transform: scale(1);    opacity: 1; }
+}
+
+@keyframes cellShake {
+  0%   { transform: translateX(0); }
+  20%  { transform: translateX(-4px); }
+  40%  { transform: translateX(4px); }
+  60%  { transform: translateX(-3px); }
+  80%  { transform: translateX(3px); }
+  100% { transform: translateX(0); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(24px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.88); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
 }

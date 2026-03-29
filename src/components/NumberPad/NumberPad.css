@@ -1,3 +1,4 @@
+/* ── Number Pad ─────────────────────────────────────────────────────────── */
 .numpad {
   display: flex;
   flex-direction: column;
@@ -8,50 +9,72 @@
 
 .numpad-row {
   display: flex;
-  gap: 6px;
+  gap: 7px;
   justify-content: center;
 }
 
+/* ── Physical key button ────────────────────────────────────────────────── */
 .numpad-btn {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
+  gap: 4px;
   flex: 1;
-  max-width: 60px;
-  min-height: 56px;
+  max-width: 62px;
+  min-height: 58px;
   border: none;
-  border-radius: 10px;
-  background: var(--color-numpad-bg);
+  border-radius: 12px;
   cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
-  transition: transform 0.08s, background 0.1s;
-  padding: 6px 0;
+  padding: 6px 0 4px;
+  position: relative;
+
+  /* Gradient face of the key */
+  background: linear-gradient(180deg, #22223a 0%, #1a1a2e 100%);
+
+  /* 3-D shadow — bottom edge of key */
+  box-shadow:
+    0 4px 0 #09090f,
+    0 0 0 1px #28284a,
+    inset 0 1px 0 rgba(255,255,255,0.06);
+
+  /* Fast press transition */
+  transition: transform 55ms ease, box-shadow 55ms ease;
 }
 
+/* Key pressed down */
 .numpad-btn:active:not(:disabled) {
-  transform: scale(0.93);
-  background: var(--color-numpad-active);
+  transform: translateY(3px);
+  box-shadow:
+    0 1px 0 #09090f,
+    0 0 0 1px #28284a,
+    inset 0 1px 0 rgba(255,255,255,0.03);
 }
 
 .numpad-btn--exhausted {
-  opacity: 0.25;
+  opacity: 0.2;
   pointer-events: none;
 }
 
-.numpad-btn--erase {
-  background: var(--color-numpad-erase);
+/* ── Digit label ────────────────────────────────────────────────────────── */
+.numpad-digit {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #dcdcf0;
+  line-height: 1;
+  letter-spacing: -0.02em;
 }
 
+/* ── Remaining dots ─────────────────────────────────────────────────────── */
 .numpad-dots {
   display: flex;
   flex-direction: column;
   gap: 2px;
   align-items: center;
   justify-content: center;
-  min-height: 8px;
+  min-height: 9px;
 }
 
 .numpad-dots-row {
@@ -62,16 +85,9 @@
 }
 
 .numpad-dot {
-  width: 5px;
-  height: 5px;
+  width: 4px;
+  height: 4px;
   border-radius: 50%;
-  background: var(--color-primary);
-  opacity: 0.6;
-}
-
-.numpad-digit {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: var(--color-text);
-  line-height: 1;
+  background: #0a84ff;
+  opacity: 0.7;
 }
