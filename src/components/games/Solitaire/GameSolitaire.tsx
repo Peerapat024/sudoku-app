@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useGame } from '../../../context/GameContext';
 import { Card as CardType } from '../../../types';
+import { canMoveToFoundation, canMoveToPile } from '../../../lib/solitaire';
 import './GameSolitaire.css';
 
 const SUIT_SYMBOLS: Record<string, string> = {
@@ -26,10 +27,38 @@ export default function GameSolitaire() {
         setSelected(null);
       }
     } else {
-      // One-tap magic: try to auto-move
-      dispatch({ type: 'SOLITAIRE_AUTO_MOVE', from, cardIndex });
-      // We also select it just in case the user wants to manually pick a target
-      setSelected({ from, cardIndex });
+      // Determine if this card can auto-move
+      const sourceList = from === 'waste' ? waste : (from.startsWith('pile-') ? piles[parseInt(from.split('-')[1])] : null);
+      if (!sourceList) return;
+      
+      const cardsToMove = sourceList.slice(cardIndex);
+      if (cardsToMove.length === 0) return;
+      const card = cardsToMove[0];
+
+      let canAutoMove = false;
+
+      // 1. Try foundations
+      if (cardsToMove.length === 1) {
+        for (let i = 0; i < 4; i++) {
+          if (canMoveToFoundation(card, foundations[i])) canAutoMove = true;
+        }
+      }
+
+      // 2. Try tableau piles
+      if (!canAutoMove) {
+        for (let i = 0; i < 7; i++) {
+          if (from !== `pile-${i}` && canMoveToPile(card, piles[i])) {
+            canAutoMove = true;
+          }
+        }
+      }
+
+      if (canAutoMove) {
+        dispatch({ type: 'SOLITAIRE_AUTO_MOVE', from, cardIndex });
+        setSelected(null); // Explicitly clear selected so next tap isn't blocked!
+      } else {
+        setSelected({ from, cardIndex });
+      }
     }
   };
 
