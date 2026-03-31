@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useCallback, useRef, useState } from 'react';
 import { useGame } from '../../../context/GameContext';
 import './Game2048.css';
 
@@ -33,16 +33,28 @@ const TILE_TEXT_COLORS: Record<number, string> = {
 export default function Game2048() {
   const { state, dispatch } = useGame();
   const { grid, score, bestScore, isGameOver, isWin } = state.g2048;
+  const [isMoving, setIsMoving] = useState(false);
+  const prevGridRef = useRef<number[][]>(grid);
 
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+  const handleMove = useCallback((direction: 'up' | 'down' | 'left' | 'right') => {
     if (isGameOver) return;
-    if (e.key === 'ArrowUp') dispatch({ type: 'G2048_MOVE', direction: 'up' });
-    if (e.key === 'ArrowDown') dispatch({ type: 'G2048_MOVE', direction: 'down' });
-    if (e.key === 'ArrowLeft') dispatch({ type: 'G2048_MOVE', direction: 'left' });
-    if (e.key === 'ArrowRight') dispatch({ type: 'G2048_MOVE', direction: 'right' });
+    setIsMoving(true);
+    dispatch({ type: 'G2048_MOVE', direction });
+    setTimeout(() => setIsMoving(false), 100);
   }, [dispatch, isGameOver]);
 
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'ArrowUp') handleMove('up');
+    if (e.key === 'ArrowDown') handleMove('down');
+    if (e.key === 'ArrowLeft') handleMove('left');
+    if (e.key === 'ArrowRight') handleMove('right');
+  }, [handleMove]);
+
   const touchStart = useRef<{ x: number, y: number } | null>(null);
+
+  useEffect(() => {
+    prevGridRef.current = grid;
+  }, [grid]);
 
   useEffect(() => {
     const handleTS = (e: TouchEvent) => {
@@ -55,9 +67,9 @@ export default function Game2048() {
       const dy = e.changedTouches[0].clientY - touchStart.current.y;
       
       if (Math.abs(dx) > Math.abs(dy)) {
-        if (Math.abs(dx) > 30) dispatch({ type: 'G2048_MOVE', direction: dx > 0 ? 'right' : 'left' });
+        if (Math.abs(dx) > 30) handleMove(dx > 0 ? 'right' : 'left');
       } else {
-        if (Math.abs(dy) > 30) dispatch({ type: 'G2048_MOVE', direction: dy > 0 ? 'down' : 'up' });
+        if (Math.abs(dy) > 30) handleMove(dy > 0 ? 'down' : 'up');
       }
       touchStart.current = null;
     };
@@ -71,7 +83,7 @@ export default function Game2048() {
       window.removeEventListener('touchstart', handleTS);
       window.removeEventListener('touchend', handleTE);
     };
-  }, [handleKeyDown, dispatch]);
+  }, [handleKeyDown, handleMove]);
 
   return (
     <div className="game-2048">
@@ -88,26 +100,28 @@ export default function Game2048() {
         </div>
       </div>
 
-      <div 
-        className="g2048-grid"
-      >
+      <div className={`g2048-grid ${isMoving ? 'moving' : ''}`}>
         {grid.map((row, r) => (
-          row.map((cell, c) => (
-            <div key={`${r}-${c}`} className="grid-cell">
-              {cell !== 0 && (
-                <div 
-                  className={`tile tile-${cell}`}
-                  style={{ 
-                    backgroundColor: TILE_COLORS[cell] || '#3c3a32',
-                    color: TILE_TEXT_COLORS[cell] || '#f9f6f2',
-                    fontSize: cell >= 1000 ? '1.5rem' : cell >= 100 ? '1.8rem' : '2.2rem'
-                  }}
-                >
-                  {cell}
-                </div>
-              )}
-            </div>
-          ))
+          row.map((cell, c) => {
+            const isMerged = cell !== 0 && cell > (prevGridRef.current[r]?.[c] || 0) && (prevGridRef.current[r]?.[c] || 0) !== 0;
+            
+            return (
+              <div key={`${r}-${c}`} className="grid-cell">
+                {cell !== 0 && (
+                  <div 
+                    className={`tile tile-${cell} ${isMerged ? 'tile-merged' : ''}`}
+                    style={{ 
+                      backgroundColor: TILE_COLORS[cell] || '#3c3a32',
+                      color: TILE_TEXT_COLORS[cell] || '#f9f6f2',
+                      fontSize: cell >= 1000 ? '1.5rem' : cell >= 100 ? '1.8rem' : '2.2rem'
+                    }}
+                  >
+                    {cell}
+                  </div>
+                )}
+              </div>
+            );
+          })
         ))}
 
         {isGameOver && (
