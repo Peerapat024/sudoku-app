@@ -19,7 +19,7 @@
   --color-numpad-active: #242424;
   --color-action-bg:     #181818;
 
-  --board-size: min(95vw, 50vh);
+  --board-size: min(95vw, 65vh);
 }
 
 @media (max-height: 700px) {
