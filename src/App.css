@@ -19,7 +19,7 @@
   --color-numpad-active: #242424;
   --color-action-bg:     #181818;
 
-  --board-size: min(95vw, 65vh);
+  --board-size: min(98vw, 72vh);
 }
 
 @media (max-height: 700px) {
@@ -61,7 +61,7 @@ button { font-family: inherit; }
   justify-content: space-between;
   width: 100%;
   max-width: var(--board-size);
-  padding: 2px 0;
+  padding: 8px 0;
 }
 
 .back-btn {

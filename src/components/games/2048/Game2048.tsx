@@ -92,7 +92,7 @@ export default function Game2048() {
                   style={{ 
                     backgroundColor: TILE_COLORS[cell] || '#3c3a32',
                     color: TILE_TEXT_COLORS[cell] || '#f9f6f2',
-                    fontSize: cell >= 1000 ? '1.8rem' : cell >= 100 ? '2.2rem' : '2.8rem'
+                    fontSize: cell >= 1000 ? '1.5rem' : cell >= 100 ? '1.8rem' : '2.2rem'
                   }}
                 >
                   {cell}
