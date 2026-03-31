@@ -1,4 +1,3 @@
-import { WordleState } from '../types';
 
 const WORDS = [
   'APPLE', 'BEACH', 'BRAIN', 'BREAD', 'BRUSH', 'CHAIR', 'CHEST', 'CHORD', 'CLICK', 'CLOCK',
