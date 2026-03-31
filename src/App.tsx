@@ -9,6 +9,7 @@ import Lobby from './components/Lobby/Lobby';
 import Game2048 from './components/games/2048/Game2048';
 import GameWordle from './components/games/Wordle/GameWordle';
 import GameSolitaire from './components/games/Solitaire/GameSolitaire';
+import GameCrossword from './components/games/Crossword/GameCrossword';
 import './App.css';
 
 const difficultyLabels = {
@@ -100,6 +101,23 @@ export default function App() {
         </header>
 
         <GameSolitaire />
+      </div>
+    );
+  }
+
+  // Handle Crossword Game View
+  if (state.currentGameId === 'crossword') {
+    return (
+      <div className="game">
+        <header className="game-header">
+          <button className="back-btn" onClick={() => dispatch({ type: 'GOTO_LOBBY' })}>
+            ← Lobby
+          </button>
+          <span className="game-difficulty">Crossword</span>
+          <div className="header-spacer" />
+        </header>
+
+        <GameCrossword />
       </div>
     );
   }

@@ -5,6 +5,7 @@ import { saveRecord } from '../lib/records';
 import { createEmptyGrid, addRandomTile, moveGrid, isGameOver, hasWon } from '../lib/g2048';
 import { dealGame, canMoveToPile, canMoveToFoundation } from '../lib/solitaire';
 import { getRandomWord, getLetterStatus } from '../lib/wordle';
+import { getInitialCrossword } from '../lib/crossword';
 
 const STORAGE_KEY = 'multi_game_hub_state';
 
@@ -57,6 +58,8 @@ const initialWordleState: WordleState = {
   usedLetters: {},
 };
 
+const initialCrosswordState = getInitialCrossword();
+
 const initialState: GameState = {
   screen: 'lobby',
   currentGameId: null,
@@ -64,6 +67,7 @@ const initialState: GameState = {
   g2048: initialG2048State,
   solitaire: initialSolitaireState,
   wordle: initialWordleState,
+  crossword: initialCrosswordState,
 };
 
 function gameReducer(state: GameState, action: GameAction): GameState {
@@ -80,6 +84,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         nextState.solitaire = dealGame();
       } else if (action.gameId === 'wordle' && state.wordle.solution === '') {
         nextState.wordle = { ...initialWordleState, solution: getRandomWord() };
+      } else if (action.gameId === 'crossword' && state.crossword.acrossClues.length === 0) {
+        nextState.crossword = getInitialCrossword();
       }
       return nextState;
     }
@@ -407,6 +413,91 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         }
       };
     }
+
+    case 'CROSSWORD_SELECT_CELL': {
+      const c = state.crossword;
+      if (c.grid[action.row][action.col].isBlocked) return state;
+      const same = c.selectedCell && c.selectedCell[0] === action.row && c.selectedCell[1] === action.col;
+      return {
+        ...state,
+        crossword: {
+          ...c,
+          selectedCell: [action.row, action.col],
+          direction: same ? (c.direction === 'across' ? 'down' : 'across') : c.direction
+        }
+      };
+    }
+
+    case 'CROSSWORD_SET_LETTER': {
+      const c = state.crossword;
+      if (!c.selectedCell || c.isWin) return state;
+      const [r, col] = c.selectedCell;
+      const newGrid = c.grid.map(row => row.map(cell => ({ ...cell })));
+      newGrid[r][col].letter = action.letter.toUpperCase();
+      
+      const isWin = newGrid.every(row => row.every(cell => cell.isBlocked || cell.letter === cell.solution));
+
+      // Auto move cursor
+      let nextR = r;
+      let nextCol = col;
+      if (c.direction === 'across') {
+        nextCol++;
+        while (nextCol < newGrid[r].length && newGrid[r][nextCol].isBlocked) nextCol++;
+        if (nextCol >= newGrid[r].length) nextCol = col;
+      } else {
+        nextR++;
+        while (nextR < newGrid.length && newGrid[nextR][col].isBlocked) nextR++;
+        if (nextR >= newGrid.length) nextR = r;
+      }
+
+      return {
+        ...state,
+        crossword: {
+          ...c,
+          grid: newGrid,
+          isWin,
+          selectedCell: [nextR, nextCol]
+        }
+      };
+    }
+
+    case 'CROSSWORD_DELETE': {
+      const c = state.crossword;
+      if (!c.selectedCell || c.isWin) return state;
+      const [r, col] = c.selectedCell;
+      const newGrid = c.grid.map(row => row.map(cell => ({ ...cell })));
+      
+      if (newGrid[r][col].letter === '') {
+        // move back
+        let prevR = r;
+        let prevCol = col;
+        if (c.direction === 'across') {
+          prevCol--;
+          while (prevCol >= 0 && newGrid[r][prevCol].isBlocked) prevCol--;
+          if (prevCol >= 0) {
+            newGrid[r][prevCol].letter = '';
+            return { ...state, crossword: { ...c, grid: newGrid, selectedCell: [r, prevCol] } };
+          }
+        } else {
+          prevR--;
+          while (prevR >= 0 && newGrid[prevR][col].isBlocked) prevR--;
+          if (prevR >= 0) {
+            newGrid[prevR][col].letter = '';
+            return { ...state, crossword: { ...c, grid: newGrid, selectedCell: [prevR, col] } };
+          }
+        }
+      } else {
+        newGrid[r][col].letter = '';
+      }
+
+      return { ...state, crossword: { ...c, grid: newGrid } };
+    }
+
+    case 'CROSSWORD_TOGGLE_DIRECTION':
+      return { ...state, crossword: { ...state.crossword, direction: state.crossword.direction === 'across' ? 'down' : 'across' } };
+
+    case 'CROSSWORD_RESTART':
+      return { ...state, crossword: getInitialCrossword() };
 
     case 'WORDLE_RESTART':
       return { ...state, wordle: { ...initialWordleState, solution: getRandomWord() } };

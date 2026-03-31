@@ -1,0 +1,164 @@
+.game-crossword {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  max-width: var(--board-size);
+  margin: 0 auto;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.crossword-grid-container {
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  background: #000;
+  border: 1px solid #333;
+  padding: 1px;
+}
+
+.crossword-grid {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  gap: 1px;
+}
+
+.crossword-cell {
+  background: #fff;
+  position: relative;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.crossword-cell.blocked {
+  background: #111;
+  cursor: default;
+}
+
+.crossword-cell.selected {
+  background: #ffe600 !important;
+}
+
+.crossword-cell.highlight {
+  background: #e1f5fe;
+}
+
+.cell-number {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  line-height: 1;
+}
+
+.cell-letter {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #1a1a1a;
+}
+
+.crossword-clue-display {
+  background: #1e1e1e;
+  padding: 12px;
+  border-radius: 8px;
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.current-clue {
+  font-size: 0.95rem;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.clue-label {
+  font-weight: 800;
+  color: var(--color-accent);
+  margin-right: 8px;
+}
+
+.current-clue.hint {
+  opacity: 0.5;
+  font-style: italic;
+}
+
+.crossword-clue-lists {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.clue-section {
+  display: flex;
+  flex-direction: column;
+  background: #181818;
+  border-radius: 8px;
+  padding: 8px;
+  min-height: 0;
+}
+
+.clue-section h3 {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+  opacity: 0.6;
+}
+
+.clue-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.clue-item {
+  font-size: 0.75rem;
+  padding: 6px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  line-height: 1.3;
+}
+
+.clue-item:active {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.clue-item.active {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+.crossword-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+  backdrop-filter: blur(8px);
+}
+
+.overlay-content {
+  text-align: center;
+  background: #1e1e1e;
+  padding: 2.5rem;
+  border-radius: 20px;
+  border: 1px solid var(--color-accent);
+  max-width: 80%;
+}

@@ -6,9 +6,9 @@
   width: 100%;
   max-width: var(--board-size);
   margin: 0 auto;
-  --card-width: clamp(48px, 13.8vw, 110px);
-  --card-height: calc(var(--card-width) * 1.45);
-  --card-gap: 2px;
+  --card-width: 14.25vw;
+  --card-height: calc(var(--card-width) * 1.55);
+  --card-gap: 0px;
 }
 
 .solitaire-top {
@@ -130,7 +130,7 @@
   flex-direction: column;
   line-height: 1;
   font-weight: 800;
-  font-size: 0.9rem;
+  font-size: 1.15rem;
 }
 
 .card-suit-large {
@@ -138,8 +138,8 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 2.5rem;
-  opacity: 0.15;
+  font-size: 3.5rem;
+  opacity: 0.25;
 }
 
 .bottom-right {
@@ -150,7 +150,7 @@
 .solitaire-tableau {
   display: flex;
   justify-content: space-between;
-  gap: 10px;
+  gap: 0px;
 }
 
 .solitaire-card.stacked {
@@ -180,20 +180,15 @@
 }
 
 @media (max-width: 480px) {
-  .deck-slot, .waste-slot, .foundation-slot, .tableau-pile, .solitaire-card {
-    width: 45px;
-    height: 65px;
-  }
-  
   .card-suit-large {
-    font-size: 1.5rem;
+    font-size: 2.5rem;
   }
   
   .card-corner {
-    font-size: 0.6rem;
+    font-size: 1rem;
   }
   
   .solitaire-card.stacked {
-    top: calc(var(--stack-index) * 12px);
+    top: calc(var(--stack-index) * 18px);
   }
 }

@@ -33,6 +33,13 @@ const games: GameCard[] = [
     color: '#34c759'
   },
   {
+    id: 'crossword',
+    title: 'Crossword',
+    description: 'Solve the grid with clever clues.',
+    icon: '✍️',
+    color: '#ffa502'
+  },
+  {
     id: '2048',
     title: '2048',
     description: 'Join the numbers and get to the 2048 tile!',

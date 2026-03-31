@@ -9,7 +9,7 @@ export interface Cell {
 
 export type Board = Cell[][];  // 9x9
 
-export type GameId = 'sudoku' | 'wordle' | 'solitaire' | '2048';
+export type GameId = 'sudoku' | 'wordle' | 'solitaire' | '2048' | 'crossword';
 export type Screen = 'lobby' | 'playing';
 
 export interface GameState {
@@ -19,6 +19,32 @@ export interface GameState {
   g2048: Game2048State;
   solitaire: SolitaireState;
   wordle: WordleState;
+  crossword: CrosswordState;
+}
+
+export interface CrosswordCell {
+  letter: string;
+  solution: string;
+  isBlocked: boolean;
+  number?: number;
+}
+
+export interface CrosswordClue {
+  number: number;
+  direction: 'across' | 'down';
+  clue: string;
+  answer: string;
+  row: number;
+  col: number;
+}
+
+export interface CrosswordState {
+  grid: CrosswordCell[][];
+  acrossClues: CrosswordClue[];
+  downClues: CrosswordClue[];
+  selectedCell: [number, number] | null;
+  direction: 'across' | 'down';
+  isWin: boolean;
 }
 
 export interface WordleState {
@@ -95,4 +121,9 @@ export type GameAction =
   | { type: 'WORDLE_KEY_PRESS'; key: string }
   | { type: 'WORDLE_DELETE' }
   | { type: 'SOLITAIRE_AUTO_MOVE'; from: string; cardIndex: number }
+  | { type: 'CROSSWORD_SELECT_CELL'; row: number; col: number }
+  | { type: 'CROSSWORD_SET_LETTER'; letter: string }
+  | { type: 'CROSSWORD_DELETE' }
+  | { type: 'CROSSWORD_TOGGLE_DIRECTION' }
+  | { type: 'CROSSWORD_RESTART' }
   | { type: 'WORDLE_RESTART' };
