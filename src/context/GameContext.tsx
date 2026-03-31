@@ -90,6 +90,24 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return nextState;
     }
 
+    case 'RESET_GAME': {
+      let nextState: GameState = { ...state, currentGameId: action.gameId, screen: 'playing' as Screen };
+      if (action.gameId === 'sudoku') {
+        nextState.sudoku = initialSudokuState;
+        // The App component directs to Menu if solution.length === 0
+      } else if (action.gameId === '2048') {
+        const grid = addRandomTile(addRandomTile(createEmptyGrid()));
+        nextState.g2048 = { ...initialG2048State, grid };
+      } else if (action.gameId === 'solitaire') {
+        nextState.solitaire = dealGame();
+      } else if (action.gameId === 'wordle') {
+        nextState.wordle = { ...initialWordleState, solution: getRandomWord() };
+      } else if (action.gameId === 'crossword') {
+        nextState.crossword = getInitialCrossword();
+      }
+      return nextState;
+    }
+
     case 'START_SUDOKU': {
       const board: Board = action.puzzle.map(row =>
         row.map(val => ({

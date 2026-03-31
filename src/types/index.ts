@@ -135,4 +135,5 @@ export type GameAction =
   | { type: 'CROSSWORD_CHECK_ERRORS' }
   | { type: 'CROSSWORD_MOVE_CURSOR'; direction: 'up' | 'down' | 'left' | 'right' }
   | { type: 'CROSSWORD_RESTART' }
-  | { type: 'WORDLE_RESTART' };
+  | { type: 'WORDLE_RESTART' }
+  | { type: 'RESET_GAME'; gameId: GameId };

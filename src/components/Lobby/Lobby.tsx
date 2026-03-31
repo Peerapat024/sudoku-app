@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { useGame } from '../../context/GameContext';
-import { GameId } from '../../types';
+import { GameId, GameState } from '../../types';
 import './Lobby.css';
 
 interface GameCard {
@@ -48,11 +49,48 @@ const games: GameCard[] = [
   }
 ];
 
+function hasActiveGame(state: GameState, id: GameId): boolean {
+  switch(id) {
+    case 'sudoku': 
+      return state.sudoku.solution.length > 0 && !state.sudoku.isComplete;
+    case 'wordle':
+      return state.wordle.board.some(row => row[0] !== '') && !state.wordle.isGameOver;
+    case 'solitaire':
+      // Stock size differs from 24, or waste has cards (means player interacted)
+      return (state.solitaire.waste.length > 0 || state.solitaire.deck.length !== 24) && !state.solitaire.isWin;
+    case '2048':
+      return state.g2048.score > 0 && !state.g2048.isGameOver;
+    case 'crossword':
+      return state.crossword.grid.some(r => r.some(c => c.letter !== '')) && !state.crossword.isWin;
+    default:
+      return false;
+  }
+}
+
 export default function Lobby() {
-  const { dispatch } = useGame();
+  const { state, dispatch } = useGame();
+  const [pendingGame, setPendingGame] = useState<GameId | null>(null);
 
   function selectGame(id: GameId) {
-    dispatch({ type: 'SELECT_GAME', gameId: id });
+    if (hasActiveGame(state, id)) {
+      setPendingGame(id);
+    } else {
+      dispatch({ type: 'SELECT_GAME', gameId: id });
+    }
+  }
+
+  function handleResume() {
+    if (pendingGame) {
+      dispatch({ type: 'SELECT_GAME', gameId: pendingGame });
+      setPendingGame(null);
+    }
+  }
+
+  function handleStartNew() {
+    if (pendingGame) {
+      dispatch({ type: 'RESET_GAME', gameId: pendingGame });
+      setPendingGame(null);
+    }
   }
 
   return (
@@ -83,6 +121,26 @@ export default function Lobby() {
       <footer className="lobby-footer">
         <p>Premium Puzzle Experience</p>
       </footer>
+
+      {pendingGame && (
+        <div className="lobby-modal-overlay">
+          <div className="lobby-modal">
+            <h2>Game in Progress</h2>
+            <p>You have an unfinished game of {games.find(g => g.id === pendingGame)?.title}. What would you like to do?</p>
+            <div className="lobby-modal-actions">
+              <button className="btn-resume" onClick={handleResume}>
+                Continue Game
+              </button>
+              <button className="btn-new" onClick={handleStartNew}>
+                Start New Game
+              </button>
+              <button className="btn-cancel" onClick={() => setPendingGame(null)}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
