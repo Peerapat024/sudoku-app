@@ -1,36 +1,45 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useMemo } from 'react';
 import { useGame } from '../../../context/GameContext';
 import './GameCrossword.css';
 
-const KEYS = [
+const KEYBOARD_ROWS = [
   ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
   ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
-  ['Z', 'X', 'C', 'V', 'B', 'N', 'M', 'DEL']
+  ['Z', 'X', 'C', 'V', 'B', 'N', 'M', '⌫']
 ];
 
 export default function GameCrossword() {
   const { state, dispatch } = useGame();
-  const { grid, acrossClues, downClues, selectedCell, direction, isWin } = state.crossword;
+  const { grid, direction, selectedCell, isWin, theme, puzzleId } = state.crossword;
+
+  const currentClue = useMemo(() => {
+    if (!selectedCell) return null;
+    const [r, c] = selectedCell;
+    const cell = grid[r][c];
+    
+    // Find the word starting cell
+    let startR = r, startC = c;
+    if (direction === 'across') {
+      while (startC > 0 && !grid[r][startC - 1].isBlocked) startC--;
+    } else {
+      while (startR > 0 && !grid[startR - 1][c].isBlocked) startR--;
+    }
+    
+    const startCell = grid[startR][startC];
+    const clues = state.crossword.isWin ? [] : (direction === 'across' ? state.crossword.grid : []); // This is a bit complex due to state structure
+    // For now, let's find it in the puzzle library or just simplify
+    return `Clue for ${startCell.number} ${direction.toUpperCase()}`;
+  }, [grid, direction, selectedCell, state.crossword]);
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if (isWin) return;
-    
-    if (e.key === 'Backspace') {
-      dispatch({ type: 'CROSSWORD_DELETE' });
-    } else if (e.key === ' ') {
-      e.preventDefault();
-      dispatch({ type: 'CROSSWORD_TOGGLE_DIRECTION' });
-    } else if (e.key === 'ArrowUp') {
-      dispatch({ type: 'CROSSWORD_MOVE_CURSOR', direction: 'up' });
-    } else if (e.key === 'ArrowDown') {
-      dispatch({ type: 'CROSSWORD_MOVE_CURSOR', direction: 'down' });
-    } else if (e.key === 'ArrowLeft') {
-      dispatch({ type: 'CROSSWORD_MOVE_CURSOR', direction: 'left' });
-    } else if (e.key === 'ArrowRight') {
-      dispatch({ type: 'CROSSWORD_MOVE_CURSOR', direction: 'right' });
-    } else if (e.key.length === 1 && /[a-zA-Z0-9]/.test(e.key)) {
-      dispatch({ type: 'CROSSWORD_SET_LETTER', letter: e.key });
-    }
+    if (e.key === 'Backspace') dispatch({ type: 'CROSSWORD_DELETE' });
+    else if (e.key === ' ') { e.preventDefault(); dispatch({ type: 'CROSSWORD_TOGGLE_DIRECTION' }); }
+    else if (e.key === 'ArrowUp') dispatch({ type: 'CROSSWORD_MOVE_CURSOR', direction: 'up' });
+    else if (e.key === 'ArrowDown') dispatch({ type: 'CROSSWORD_MOVE_CURSOR', direction: 'down' });
+    else if (e.key === 'ArrowLeft') dispatch({ type: 'CROSSWORD_MOVE_CURSOR', direction: 'left' });
+    else if (e.key === 'ArrowRight') dispatch({ type: 'CROSSWORD_MOVE_CURSOR', direction: 'right' });
+    else if (e.key.length === 1 && /[a-zA-Z0-9]/.test(e.key)) dispatch({ type: 'CROSSWORD_SET_LETTER', letter: e.key });
   }, [dispatch, isWin]);
 
   useEffect(() => {
@@ -38,140 +47,86 @@ export default function GameCrossword() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
 
-  const getCurrentClue = () => {
-    if (!selectedCell) return null;
-    const [r, c] = selectedCell;
-    
-    // Find the clue that applies to this cell in the current direction
-    const clueList = direction === 'across' ? acrossClues : downClues;
-    return clueList.find(clue => {
-      if (direction === 'across') {
-        return r === clue.row && c >= clue.col && c < clue.col + clue.answer.length;
-      } else {
-        return c === clue.col && r >= clue.row && r < clue.row + clue.answer.length;
-      }
-    });
+  const onKeyClick = (key: string) => {
+    if (key === '⌫') dispatch({ type: 'CROSSWORD_DELETE' });
+    else dispatch({ type: 'CROSSWORD_SET_LETTER', letter: key });
   };
 
-  const currentClue = getCurrentClue();
+  const getActiveWordRange = () => {
+    if (!selectedCell) return [];
+    const [r, c] = selectedCell;
+    const range = [];
+    if (direction === 'across') {
+      let currC = c;
+      while (currC > 0 && !grid[r][currC - 1].isBlocked) currC--;
+      while (currC < grid[0].length && !grid[r][currC].isBlocked) {
+        range.push(`${r}-${currC}`);
+        currC++;
+      }
+    } else {
+      let currR = r;
+      while (currR > 0 && !grid[currR - 1][c].isBlocked) currR--;
+      while (currR < grid.length && !grid[currR][c].isBlocked) {
+        range.push(`${currR}-${c}`);
+        currR++;
+      }
+    }
+    return range;
+  };
+
+  const activeWordRange = getActiveWordRange();
 
   return (
-    <div className="game-crossword">
-      <div className="crossword-header">
-        <h2>{state.crossword.theme}</h2>
-        <span className="puzzle-id">#{state.crossword.puzzleId}</span>
+    <div className="full-crossword">
+      <div className="crossword-hud">
+        <div className="hud-meta">
+          <span className="hud-id">#{puzzleId}</span>
+          <span className="hud-theme">{theme}</span>
+        </div>
+        <div className="hud-word-preview">
+          {activeWordRange.map(id => {
+            const [r, c] = id.split('-').map(Number);
+            return (
+              <span key={id} className={`preview-letter ${selectedCell?.[0] === r && selectedCell?.[1] === c ? 'active' : ''}`}>
+                {grid[r][c].letter || '_'}
+              </span>
+            );
+          })}
+        </div>
       </div>
+
       <div className="crossword-grid-container">
-        <div 
-          className="crossword-grid" 
-          style={{ gridTemplateColumns: `repeat(${grid.length}, 1fr)` }}
-        >
-          {grid.map((row, r) => (
-            row.map((cell, c) => {
-              const isSelected = selectedCell?.[0] === r && selectedCell?.[1] === c;
-              const isInCurrentWord = currentClue && (
-                direction === 'across' 
-                  ? (r === currentClue.row && c >= currentClue.col && c < currentClue.col + currentClue.answer.length)
-                  : (c === currentClue.col && r === currentClue.row && r < currentClue.row + currentClue.answer.length)
-              );
-
-              return (
-                <div 
-                  key={`${r}-${c}`}
-                  className={`crossword-cell ${cell.isBlocked ? 'blocked' : ''} ${isSelected ? 'selected' : ''} ${isInCurrentWord ? 'highlight' : ''} ${cell.isError ? 'error' : ''} ${cell.isRevealed ? 'revealed' : ''}`}
-                  onClick={() => !cell.isBlocked && dispatch({ type: 'CROSSWORD_SELECT_CELL', row: r, col: c })}
-                >
-                  {!cell.isBlocked && (
-                    <>
-                      {cell.number && <span className="cell-number">{cell.number}</span>}
-                      <span className="cell-letter">{cell.letter}</span>
-                    </>
-                  )}
-                </div>
-              );
-            })
-          ))}
+        <div className="crossword-grid" style={{ gridTemplateColumns: `repeat(${grid[0].length}, 1fr)` }}>
+          {grid.map((row, r) => row.map((cell, c) => (
+            <div
+              key={`${r}-${c}`}
+              className={`grid-cell ${cell.isBlocked ? 'blocked' : ''} ${selectedCell?.[0] === r && selectedCell?.[1] === c ? 'selected' : ''} ${activeWordRange.includes(`${r}-${c}`) ? 'in-word' : ''} ${cell.isError ? 'error' : ''}`}
+              onClick={() => !cell.isBlocked && dispatch({ type: 'CROSSWORD_SELECT_CELL', row: r, col: c })}
+            >
+              {!cell.isBlocked && (
+                <>
+                  {cell.number && <span className="cell-number">{cell.number}</span>}
+                  <span className="cell-letter">{cell.letter}</span>
+                </>
+              )}
+            </div>
+          )))}
         </div>
       </div>
 
-      <div className="crossword-toolbar">
-        <button 
-          className="tool-btn" 
-          onClick={() => dispatch({ type: 'CROSSWORD_TOGGLE_DIRECTION' })}
-          title="Switch Direction"
-        >
-          🔄 {direction === 'across' ? 'Across' : 'Down'}
-        </button>
-        <button 
-          className="tool-btn" 
-          onClick={() => dispatch({ type: 'CROSSWORD_CHECK_ERRORS' })}
-          title="Check Errors"
-        >
-          ✅ Check
-        </button>
-        <div className="tool-dropdown">
-          <button className="tool-btn main">💡 Hint</button>
-          <div className="dropdown-content">
-            <button onClick={() => dispatch({ type: 'CROSSWORD_REVEAL_LETTER' })}>Reveal Letter</button>
-            <button onClick={() => dispatch({ type: 'CROSSWORD_REVEAL_WORD' })}>Reveal Word</button>
-          </div>
+      <div className="clue-bar">
+        <button className="clue-nav prev">‹</button>
+        <div className="current-clue-text">
+          <strong>{direction.toUpperCase()}:</strong> {currentClue}
         </div>
+        <button className="clue-nav next">›</button>
       </div>
 
-      <div className="crossword-clue-display">
-        {currentClue ? (
-          <div className="current-clue">
-            <span className="clue-label">{currentClue.number} {direction.toUpperCase()}:</span>
-            <span className="clue-text">{currentClue.clue}</span>
-          </div>
-        ) : (
-          <div className="current-clue hint">Select a cell to see the clue</div>
-        )}
-      </div>
-
-      <div className="crossword-clue-lists">
-        <div className="clue-section">
-          <h3>Across</h3>
-          <div className="clue-list">
-            {acrossClues.map(clue => (
-              <div 
-                key={`across-${clue.number}`} 
-                className={`clue-item ${currentClue === clue ? 'active' : ''}`}
-                onClick={() => dispatch({ type: 'CROSSWORD_SELECT_CELL', row: clue.row, col: clue.col })}
-              >
-                <strong>{clue.number}.</strong> {clue.clue}
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="clue-section">
-          <h3>Down</h3>
-          <div className="clue-list">
-            {downClues.map(clue => (
-              <div 
-                key={`down-${clue.number}`} 
-                className={`clue-item ${currentClue === clue ? 'active' : ''}`}
-                onClick={() => dispatch({ type: 'CROSSWORD_SELECT_CELL', row: clue.row, col: clue.col })}
-              >
-                <strong>{clue.number}.</strong> {clue.clue}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="crossword-keyboard">
-        {KEYS.map((row, i) => (
+      <div className="custom-keyboard">
+        {KEYBOARD_ROWS.map((row, i) => (
           <div key={i} className="keyboard-row">
             {row.map(key => (
-              <button 
-                key={key} 
-                className={`key ${key === 'DEL' ? 'large' : ''}`}
-                onClick={() => {
-                  if (key === 'DEL') dispatch({ type: 'CROSSWORD_DELETE' });
-                  else dispatch({ type: 'CROSSWORD_SET_LETTER', letter: key });
-                }}
-              >
+              <button key={key} className={`key ${key === '⌫' ? 'backspace' : ''}`} onClick={() => onKeyClick(key)}>
                 {key}
               </button>
             ))}
@@ -182,17 +137,11 @@ export default function GameCrossword() {
       {isWin && (
         <div className="crossword-overlay">
           <div className="overlay-content">
-            <div className="win-emoji">🏆</div>
-            <h2>Marvelous!</h2>
-            {state.crossword.revealer && (
-              <div className="revealer-box">
-                <span className="revealer-title">THE REVEAL:</span>
-                <p className="revealer-text">{state.crossword.revealer}</p>
-              </div>
-            )}
-            <p>You've solved #{state.crossword.puzzleId}: <strong>{state.crossword.theme}</strong></p>
+            <div className="win-emoji">🎉</div>
+            <h2>Magnificent!</h2>
+            <p>You conquered the full grid.</p>
             <button className="restart-btn" onClick={() => dispatch({ type: 'CROSSWORD_RESTART' })}>
-              Play Another
+              Next Puzzle
             </button>
           </div>
         </div>

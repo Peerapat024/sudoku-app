@@ -1,36 +1,42 @@
-import { CrosswordState, CrosswordCell } from '../types';
-import { PUZZLE_LIBRARY } from './puzzles';
+import { PuzzleData } from './puzzles';
 
-export function getInitialCrossword(): CrosswordState {
-  // Pick random puzzle from library
-  const puzzle = PUZZLE_LIBRARY[Math.floor(Math.random() * PUZZLE_LIBRARY.length)];
+export function getInitialCrossword(puzzleId?: string): any {
+  const allPuzzles = require('./puzzles').PUZZLE_LIBRARY;
+  let puzzle = puzzleId ? allPuzzles.find((p: any) => p.id === puzzleId) : null;
+  
+  if (!puzzle) {
+    // Select a random Flagship (15x15)
+    const flagships = allPuzzles.filter((p: any) => p.size === 15);
+    puzzle = flagships[Math.floor(Math.random() * flagships.length)];
+  }
 
-  const finalGrid: CrosswordCell[][] = Array.from({ length: puzzle.size }, () =>
-    Array.from({ length: puzzle.size }, () => ({
+  // Ensure we have a puzzle, fallback to first if none
+  if (!puzzle) puzzle = allPuzzles[0];
+
+  const grid = Array(puzzle.size).fill(null).map(() => 
+    Array(puzzle.size).fill(null).map(() => ({
       letter: '',
       solution: '',
       isBlocked: true,
+      number: null,
+      isError: false,
     }))
   );
 
-  puzzle.cells.forEach(([r, c, sol, num]) => {
-    // Validation for safety
-    if (r >= puzzle.size || c >= puzzle.size) return;
-    
-    finalGrid[r][c] = {
+  puzzle.cells.forEach(([r, c, solution, number]: any) => {
+    grid[r][c] = {
       letter: '',
-      solution: sol,
+      solution: solution.toUpperCase(),
       isBlocked: false,
-      number: num || undefined
+      number: number,
+      isError: false,
     };
   });
 
   return {
-    grid: finalGrid,
-    acrossClues: puzzle.clues.across.map(c => ({ ...c, direction: 'across' })),
-    downClues: puzzle.clues.down.map(c => ({ ...c, direction: 'down' })),
-    selectedCell: null,
+    grid,
     direction: 'across',
+    selectedCell: puzzle.cells[0] ? [puzzle.cells[0][0], puzzle.cells[0][1]] : [0, 0],
     isWin: false,
     theme: puzzle.theme,
     puzzleId: puzzle.id,
