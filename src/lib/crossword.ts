@@ -1,25 +1,7 @@
-import { CrosswordState, CrosswordCell, CrosswordClue } from '../types';
+import { CrosswordState, CrosswordCell } from '../types';
 
 export function getInitialCrossword(): CrosswordState {
-  const size = 11;
-  const grid: CrosswordCell[][] = Array.from({ length: size }, () =>
-    Array.from({ length: size }, () => ({
-      letter: '',
-      solution: '',
-      isBlocked: true,
-    }))
-  );
-
-  const acrossClues: CrosswordClue[] = [
-    { number: 1, direction: 'across', clue: 'Logical number placement game', answer: 'SUDOKU', row: 1, col: 1 },
-    { number: 4, direction: 'across', clue: 'Popular tile-merging game', answer: 'TWOH_FOR_EIGHT', answer_display: '2048', row: 3, col: 0 },
-    { number: 6, direction: 'across', clue: 'Word guessing game', answer: 'WORDLE', row: 5, col: 2 },
-    { number: 7, direction: 'across', clue: 'Card game for one', answer: 'SOLITAIRE', row: 8, col: 1 },
-  ];
-
-  // Adjust for TWOH_FOR_EIGHT -> '2048' (Handling numbers in crossword can be tricky)
-  // Let's use simpler words for the sample to avoid confusion.
-  
+  // Puzzle data
   const samplePuzzle = {
     size: 9,
     cells: [
