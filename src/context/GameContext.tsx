@@ -321,6 +321,43 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return { ...state, solitaire: newSol };
     }
 
+    case 'SOLITAIRE_AUTO_MOVE': {
+      const sol = state.solitaire;
+      const { from, cardIndex } = action;
+
+      const getSourceList = () => {
+        if (from === 'waste') return sol.waste;
+        if (from.startsWith('foundation-')) return sol.foundations[parseInt(from.split('-')[1])];
+        if (from.startsWith('pile-')) return sol.piles[parseInt(from.split('-')[1])];
+        return [];
+      };
+
+      const source = getSourceList();
+      if (source.length === 0) return state;
+      const cardsToMove = source.slice(cardIndex);
+      if (cardsToMove.length === 0) return state;
+      const card = cardsToMove[0];
+
+      // 1. Try foundations
+      if (cardsToMove.length === 1) {
+        for (let i = 0; i < 4; i++) {
+          if (canMoveToFoundation(card, sol.foundations[i])) {
+            return gameReducer(state, { type: 'SOLITAIRE_MOVE_CARD', from, to: `foundation-${i}`, cardIndex });
+          }
+        }
+      }
+
+      // 2. Try tableau piles
+      for (let i = 0; i < 7; i++) {
+        if (from === `pile-${i}`) continue;
+        if (canMoveToPile(card, sol.piles[i])) {
+          return gameReducer(state, { type: 'SOLITAIRE_MOVE_CARD', from, to: `pile-${i}`, cardIndex });
+        }
+      }
+
+      return state;
+    }
+
     case 'SOLITAIRE_RESTART':
       return { ...state, solitaire: dealGame() };
 

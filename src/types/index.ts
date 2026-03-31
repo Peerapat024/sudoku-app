@@ -94,4 +94,5 @@ export type GameAction =
   | { type: 'WORDLE_SUBMIT' }
   | { type: 'WORDLE_KEY_PRESS'; key: string }
   | { type: 'WORDLE_DELETE' }
+  | { type: 'SOLITAIRE_AUTO_MOVE'; from: string; cardIndex: number }
   | { type: 'WORDLE_RESTART' };

@@ -16,12 +16,19 @@ export default function GameSolitaire() {
   const [selected, setSelected] = useState<{ from: string, cardIndex: number } | null>(null);
 
   const handleCardClick = (from: string, cardIndex: number) => {
+    // If we have a selection, try to move to the target
     if (selected) {
-      // Try to move
-      dispatch({ type: 'SOLITAIRE_MOVE_CARD', from: selected.from, to: from, cardIndex: selected.cardIndex });
-      setSelected(null);
+      if (selected.from === from && selected.cardIndex === cardIndex) {
+        // Toggle off if clicking the same card
+        setSelected(null);
+      } else {
+        dispatch({ type: 'SOLITAIRE_MOVE_CARD', from: selected.from, to: from, cardIndex: selected.cardIndex });
+        setSelected(null);
+      }
     } else {
-      // Select
+      // One-tap magic: try to auto-move
+      dispatch({ type: 'SOLITAIRE_AUTO_MOVE', from, cardIndex });
+      // We also select it just in case the user wants to manually pick a target
       setSelected({ from, cardIndex });
     }
   };
