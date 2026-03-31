@@ -17,10 +17,19 @@ export default function GameCrossword() {
     
     if (e.key === 'Backspace') {
       dispatch({ type: 'CROSSWORD_DELETE' });
+    } else if (e.key === ' ') {
+      e.preventDefault();
+      dispatch({ type: 'CROSSWORD_TOGGLE_DIRECTION' });
+    } else if (e.key === 'ArrowUp') {
+      dispatch({ type: 'CROSSWORD_MOVE_CURSOR', direction: 'up' });
+    } else if (e.key === 'ArrowDown') {
+      dispatch({ type: 'CROSSWORD_MOVE_CURSOR', direction: 'down' });
+    } else if (e.key === 'ArrowLeft') {
+      dispatch({ type: 'CROSSWORD_MOVE_CURSOR', direction: 'left' });
+    } else if (e.key === 'ArrowRight') {
+      dispatch({ type: 'CROSSWORD_MOVE_CURSOR', direction: 'right' });
     } else if (e.key.length === 1 && /[a-zA-Z0-9]/.test(e.key)) {
       dispatch({ type: 'CROSSWORD_SET_LETTER', letter: e.key });
-    } else if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-      // Future: handle arrow navigation
     }
   }, [dispatch, isWin]);
 
@@ -173,10 +182,17 @@ export default function GameCrossword() {
       {isWin && (
         <div className="crossword-overlay">
           <div className="overlay-content">
+            <div className="win-emoji">🏆</div>
             <h2>Marvelous!</h2>
-            <p>You've solved the crossword puzzle!</p>
+            {state.crossword.revealer && (
+              <div className="revealer-box">
+                <span className="revealer-title">THE REVEAL:</span>
+                <p className="revealer-text">{state.crossword.revealer}</p>
+              </div>
+            )}
+            <p>You've solved #{state.crossword.puzzleId}: <strong>{state.crossword.theme}</strong></p>
             <button className="restart-btn" onClick={() => dispatch({ type: 'CROSSWORD_RESTART' })}>
-              New Puzzle
+              Play Another
             </button>
           </div>
         </div>

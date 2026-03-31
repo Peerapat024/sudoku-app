@@ -34,5 +34,6 @@ export function getInitialCrossword(): CrosswordState {
     isWin: false,
     theme: puzzle.theme,
     puzzleId: puzzle.id,
+    revealer: puzzle.revealer,
   };
 }

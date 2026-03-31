@@ -6,7 +6,8 @@ export interface PuzzleData {
   clues: {
     across: { number: number, clue: string, row: number, col: number, answer: string }[];
     down: { number: number, clue: string, row: number, col: number, answer: string }[];
-  }
+  };
+  revealer?: string;
 }
 
 export const PUZZLE_LIBRARY: PuzzleData[] = [
@@ -31,7 +32,8 @@ export const PUZZLE_LIBRARY: PuzzleData[] = [
         { number: 1, clue: 'Fast woodland hopper', row: 0, col: 0, answer: 'HARE' },
         { number: 4, clue: 'Large flightless bird', row: 0, col: 4, answer: 'EMU' }
       ]
-    }
+    },
+    revealer: 'Creatures of the wild and farm.'
   },
   {
     id: 'p2',

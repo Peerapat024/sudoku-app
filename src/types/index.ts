@@ -49,6 +49,7 @@ export interface CrosswordState {
   isWin: boolean;
   theme: string;
   puzzleId: string;
+  revealer?: string;
 }
 
 export interface WordleState {
@@ -132,5 +133,6 @@ export type GameAction =
   | { type: 'CROSSWORD_REVEAL_LETTER' }
   | { type: 'CROSSWORD_REVEAL_WORD' }
   | { type: 'CROSSWORD_CHECK_ERRORS' }
+  | { type: 'CROSSWORD_MOVE_CURSOR'; direction: 'up' | 'down' | 'left' | 'right' }
   | { type: 'CROSSWORD_RESTART' }
   | { type: 'WORDLE_RESTART' };

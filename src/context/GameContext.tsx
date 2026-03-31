@@ -428,6 +428,32 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    case 'CROSSWORD_MOVE_CURSOR': {
+      const c = state.crossword;
+      if (!c.selectedCell) return state;
+      const [r, col] = c.selectedCell;
+      let nextR = r;
+      let nextCol = col;
+
+      if (action.direction === 'up') nextR--;
+      else if (action.direction === 'down') nextR++;
+      else if (action.direction === 'left') nextCol--;
+      else if (action.direction === 'right') nextCol++;
+
+      // Boundary check and skip blocked
+      if (nextR < 0 || nextR >= c.grid.length || nextCol < 0 || nextCol >= c.grid[0].length) return state;
+      if (c.grid[nextR][nextCol].isBlocked) {
+        // Try to skip over blocked cells in the same direction? 
+        // For simplicity, just don't move if blocked on arrow key
+        return state;
+      }
+
+      return {
+        ...state,
+        crossword: { ...c, selectedCell: [nextR, nextCol] }
+      };
+    }
+
     case 'CROSSWORD_SET_LETTER': {
       const c = state.crossword;
       if (!c.selectedCell || c.isWin) return state;
@@ -438,17 +464,20 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       
       const isWin = newGrid.every(row => row.every(cell => cell.isBlocked || cell.letter === cell.solution));
 
-      // Auto move cursor
+      // Auto move cursor to next cell in word
       let nextR = r;
       let nextCol = col;
       if (c.direction === 'across') {
         nextCol++;
-        while (nextCol < newGrid[r].length && newGrid[r][nextCol].isBlocked) nextCol++;
-        if (nextCol >= newGrid[r].length) nextCol = col;
+        if (nextCol >= newGrid[r].length || newGrid[r][nextCol].isBlocked) {
+          // Stay at end or could jump to next clue? Stay for now.
+          nextCol = col;
+        }
       } else {
         nextR++;
-        while (nextR < newGrid.length && newGrid[nextR][col].isBlocked) nextR++;
-        if (nextR >= newGrid.length) nextR = r;
+        if (nextR >= newGrid.length || newGrid[nextR][col].isBlocked) {
+          nextR = r;
+        }
       }
 
       return {
@@ -599,9 +628,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
       sudoku: state.sudoku,
       g2048: state.g2048,
       solitaire: state.solitaire,
-      wordle: state.wordle
+      wordle: state.wordle,
+      crossword: state.crossword
     }));
-  }, [state.sudoku, state.g2048, state.solitaire, state.wordle]);
+  }, [state.sudoku, state.g2048, state.solitaire, state.wordle, state.crossword]);
 
   useEffect(() => {
     if (state.currentGameId !== 'sudoku' || state.screen !== 'playing' || state.sudoku.isComplete) return;

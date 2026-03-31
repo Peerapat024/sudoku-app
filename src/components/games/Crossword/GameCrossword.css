@@ -41,82 +41,99 @@
 }
 
 .crossword-cell {
-  background: #fff;
-  position: relative;
-  cursor: pointer;
+  background: white;
+  border: 1px solid #ddd;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+  position: relative;
+  aspect-ratio: 1;
+  cursor: pointer;
+  user-select: none;
+  font-family: inherit;
+  transition: all 0.2s ease;
 }
 
 .crossword-cell.blocked {
-  background: #111;
+  background: #1a1a1a;
+  border-color: #1a1a1a;
   cursor: default;
 }
 
 .crossword-cell.selected {
-  background: #ffe600 !important;
+  background: #ffda00 !important; /* NYT Gold */
 }
 
 .crossword-cell.highlight {
-  background: #4a4a4a;
-}
-
-.crossword-cell.revealed .cell-letter {
-  color: var(--color-accent);
-  font-style: italic;
+  background: #e1f5fe; /* Light blue word highlighting */
 }
 
 .crossword-cell.error .cell-letter {
-  color: #ff453a;
+  color: #ef5350;
+}
+
+.crossword-cell.revealed {
+  background: #f1f8e9;
+}
+
+.crossword-cell.revealed::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  border-style: solid;
+  border-width: 0 8px 8px 0;
+  border-color: transparent #4caf50 transparent transparent;
 }
 
 .cell-number {
   position: absolute;
   top: 2px;
   left: 2px;
-  font-size: 0.6rem;
-  font-weight: 700;
-  color: #1a1a1a;
+  font-size: 0.65rem;
+  font-weight: bold;
+  color: #555;
   line-height: 1;
 }
 
 .cell-letter {
-  font-size: 1.2rem;
-  font-weight: 800;
-  color: #1a1a1a;
+  font-size: 1.5rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #2c3e50;
+}
+
+/* Specific Highlight for selected word but not selected cell */
+.crossword-cell.highlight:not(.selected) {
+  background: #c3e7ff;
+}
+
+/* Hover effect */
+.crossword-cell:not(.blocked):hover {
+  background: #f5f5f5;
 }
 
 .crossword-toolbar {
   display: flex;
-  gap: 8px;
+  gap: 0.5rem;
+  width: 100%;
   justify-content: center;
-  padding: 4px;
 }
 
 .tool-btn {
-  background: #2a2a2a;
-  border: 1px solid #333;
-  color: #fff;
-  padding: 8px 12px;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 4px;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 4px;
+  font-weight: 500;
+  color: #444;
   transition: all 0.2s;
 }
 
-.tool-btn:active {
-  background: #333;
-  transform: translateY(1px);
-}
-
-.tool-btn.main {
-  background: var(--color-accent);
-  border-color: var(--color-accent);
+.tool-btn:hover {
+  background: #f0f0f0;
+  border-color: #ccc;
 }
 
 .tool-dropdown {
@@ -284,21 +301,74 @@
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.85);
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.95);
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   z-index: 100;
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.5s ease;
 }
 
 .overlay-content {
+  background: white;
+  padding: 3rem;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.1);
   text-align: center;
-  background: #1e1e1e;
-  padding: 2.5rem;
-  border-radius: 20px;
-  border: 1px solid var(--color-accent);
-  max-width: 80%;
+  max-width: 90%;
+}
+
+.win-emoji {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.revealer-box {
+  background: #f1f8e9;
+  border: 2px dashed #4caf50;
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin: 1.5rem 0;
+}
+
+.revealer-title {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: #2e7d32;
+  margin-bottom: 0.5rem;
+  letter-spacing: 2px;
+}
+
+.revealer-text {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.restart-btn {
+  background: #039be5;
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s, background 0.2s;
+  margin-top: 1rem;
+}
+
+.restart-btn:hover {
+  background: #0288d1;
+  transform: scale(1.05);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
 }
