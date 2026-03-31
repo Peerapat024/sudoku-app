@@ -2,9 +2,9 @@
 :root {
   --bg:               #0a0a0a;
   --color-bg:         #0a0a0a;
-  --color-text:       #f0f0f0;
-  --color-text-secondary: #606060;
-  --color-primary:    #d0d0d0;
+  --color-text:       #ffffff;
+  --color-text-secondary: #a0a0a0;
+  --color-primary:    #ffffff;
   --color-board-border: #282828;
   --color-cell-bg:    #111111;
   --color-cell-border: #1c1c1c;

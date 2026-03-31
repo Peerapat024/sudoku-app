@@ -64,7 +64,7 @@
 .cell-value {
   font-size: calc(var(--board-size) / 20);
   font-weight: 700;
-  color: #b0b0b0;
+  color: #ffffff;
   line-height: 1;
   letter-spacing: -0.02em;
 }
@@ -105,6 +105,6 @@
   justify-content: center;
   font-size: calc(var(--board-size) / 58);
   font-weight: 600;
-  color: #444444;
+  color: #888888;
   line-height: 1;
 }

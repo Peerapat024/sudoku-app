@@ -17,17 +17,17 @@ const TILE_COLORS: Record<number, string> = {
 };
 
 const TILE_TEXT_COLORS: Record<number, string> = {
-  2: '#776e65',
-  4: '#776e65',
-  8: '#f9f6f2',
-  16: '#f9f6f2',
-  32: '#f9f6f2',
-  64: '#f9f6f2',
-  128: '#f9f6f2',
-  256: '#f9f6f2',
-  512: '#f9f6f2',
-  1024: '#f9f6f2',
-  2048: '#f9f6f2',
+  2: '#3c3a32',
+  4: '#3c3a32',
+  8: '#ffffff',
+  16: '#ffffff',
+  32: '#ffffff',
+  64: '#ffffff',
+  128: '#ffffff',
+  256: '#ffffff',
+  512: '#ffffff',
+  1024: '#ffffff',
+  2048: '#ffffff',
 };
 
 export default function Game2048() {
