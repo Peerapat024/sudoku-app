@@ -2,6 +2,12 @@ import { useEffect, useCallback } from 'react';
 import { useGame } from '../../../context/GameContext';
 import './GameCrossword.css';
 
+const KEYS = [
+  ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
+  ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
+  ['Z', 'X', 'C', 'V', 'B', 'N', 'M', 'DEL']
+];
+
 export default function GameCrossword() {
   const { state, dispatch } = useGame();
   const { grid, acrossClues, downClues, selectedCell, direction, isWin } = state.crossword;
@@ -139,6 +145,25 @@ export default function GameCrossword() {
             ))}
           </div>
         </div>
+      </div>
+
+      <div className="crossword-keyboard">
+        {KEYS.map((row, i) => (
+          <div key={i} className="keyboard-row">
+            {row.map(key => (
+              <button 
+                key={key} 
+                className={`key ${key === 'DEL' ? 'large' : ''}`}
+                onClick={() => {
+                  if (key === 'DEL') dispatch({ type: 'CROSSWORD_DELETE' });
+                  else dispatch({ type: 'CROSSWORD_SET_LETTER', letter: key });
+                }}
+              >
+                {key}
+              </button>
+            ))}
+          </div>
+        ))}
       </div>
 
       {isWin && (
