@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { useGame } from '../../../context/GameContext';
 import './Game2048.css';
 
@@ -42,26 +42,36 @@ export default function Game2048() {
     if (e.key === 'ArrowRight') dispatch({ type: 'G2048_MOVE', direction: 'right' });
   }, [dispatch, isGameOver]);
 
-  useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleKeyDown]);
+  const touchStart = useRef<{ x: number, y: number } | null>(null);
 
-  // Touch Support
-  let touchStart: { x: number, y: number } | null = null;
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-  };
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (!touchStart) return;
-    const dx = e.changedTouches[0].clientX - touchStart.x;
-    const dy = e.changedTouches[0].clientY - touchStart.y;
-    if (Math.abs(dx) > Math.abs(dy)) {
-      if (Math.abs(dx) > 30) dispatch({ type: 'G2048_MOVE', direction: dx > 0 ? 'right' : 'left' });
-    } else {
-      if (Math.abs(dy) > 30) dispatch({ type: 'G2048_MOVE', direction: dy > 0 ? 'down' : 'up' });
-    }
-  };
+  useEffect(() => {
+    const handleTS = (e: TouchEvent) => {
+      touchStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    };
+    
+    const handleTE = (e: TouchEvent) => {
+      if (!touchStart.current) return;
+      const dx = e.changedTouches[0].clientX - touchStart.current.x;
+      const dy = e.changedTouches[0].clientY - touchStart.current.y;
+      
+      if (Math.abs(dx) > Math.abs(dy)) {
+        if (Math.abs(dx) > 30) dispatch({ type: 'G2048_MOVE', direction: dx > 0 ? 'right' : 'left' });
+      } else {
+        if (Math.abs(dy) > 30) dispatch({ type: 'G2048_MOVE', direction: dy > 0 ? 'down' : 'up' });
+      }
+      touchStart.current = null;
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('touchstart', handleTS, { passive: false });
+    window.addEventListener('touchend', handleTE, { passive: false });
+    
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('touchstart', handleTS);
+      window.removeEventListener('touchend', handleTE);
+    };
+  }, [handleKeyDown, dispatch]);
 
   return (
     <div className="game-2048">
@@ -80,8 +90,6 @@ export default function Game2048() {
 
       <div 
         className="g2048-grid"
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
       >
         {grid.map((row, r) => (
           row.map((cell, c) => (
