@@ -15,7 +15,6 @@ export default function GameCrossword() {
   const currentClue = useMemo(() => {
     if (!selectedCell) return null;
     const [r, c] = selectedCell;
-    const cell = grid[r][c];
     
     // Find the word starting cell
     let startR = r, startC = c;
@@ -26,8 +25,6 @@ export default function GameCrossword() {
     }
     
     const startCell = grid[startR][startC];
-    const clues = state.crossword.isWin ? [] : (direction === 'across' ? state.crossword.grid : []); // This is a bit complex due to state structure
-    // For now, let's find it in the puzzle library or just simplify
     return `Clue for ${startCell.number} ${direction.toUpperCase()}`;
   }, [grid, direction, selectedCell, state.crossword]);
 

@@ -1,17 +1,16 @@
-import { PuzzleData } from './puzzles';
+import { PUZZLE_LIBRARY } from './puzzles';
 
 export function getInitialCrossword(puzzleId?: string): any {
-  const allPuzzles = require('./puzzles').PUZZLE_LIBRARY;
-  let puzzle = puzzleId ? allPuzzles.find((p: any) => p.id === puzzleId) : null;
+  let puzzle = puzzleId ? PUZZLE_LIBRARY.find((p: any) => p.id === puzzleId) : null;
   
   if (!puzzle) {
     // Select a random Flagship (15x15)
-    const flagships = allPuzzles.filter((p: any) => p.size === 15);
+    const flagships = PUZZLE_LIBRARY.filter((p: any) => p.size === 15);
     puzzle = flagships[Math.floor(Math.random() * flagships.length)];
   }
 
   // Ensure we have a puzzle, fallback to first if none
-  if (!puzzle) puzzle = allPuzzles[0];
+  if (!puzzle) puzzle = PUZZLE_LIBRARY[0];
 
   const grid = Array(puzzle.size).fill(null).map(() => 
     Array(puzzle.size).fill(null).map(() => ({
