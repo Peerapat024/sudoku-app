@@ -81,8 +81,8 @@ export default function GameSolitaire() {
         }}
         style={{ '--stack-index': index } as React.CSSProperties}
       >
-        {card.isFaceUp ? (
-          <div className={`card-content ${isRed ? 'red' : 'black'}`}>
+        <div className="card-inner">
+          <div className={`card-face card-front ${isRed ? 'red' : 'black'}`}>
             <div className="card-corner top-left">
               <span>{card.rank}</span>
               <span>{SUIT_SYMBOLS[card.suit]}</span>
@@ -93,11 +93,10 @@ export default function GameSolitaire() {
               <span>{SUIT_SYMBOLS[card.suit]}</span>
             </div>
           </div>
-        ) : (
-          <div className="card-back">
+          <div className="card-face card-back">
             <div className="pattern"></div>
           </div>
-        )}
+        </div>
       </div>
     );
   };
@@ -109,7 +108,11 @@ export default function GameSolitaire() {
           <div className="deck-slot" onClick={handleDraw}>
             {deck.length > 0 ? (
               <div className="solitaire-card face-down">
-                <div className="card-back"><div className="pattern"></div></div>
+                <div className="card-inner">
+                  <div className="card-face card-back">
+                    <div className="pattern"></div>
+                  </div>
+                </div>
               </div>
             ) : (
               <div className="empty-slot reset-icon">↺</div>

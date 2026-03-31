@@ -72,7 +72,9 @@
   transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
   box-shadow: 0 4px 10px rgba(0,0,0,0.3);
   user-select: none;
-  overflow: hidden;
+  overflow: visible;
+  perspective: 1000px;
+  animation: cardDrop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) backwards;
 }
 
 .solitaire-card.selected {
@@ -82,46 +84,52 @@
 }
 
 .solitaire-card.face-down {
-  background: #2a2a2a;
+  background: transparent;
+}
+
+.card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transform-style: preserve-3d;
+}
+
+.solitaire-card.face-up .card-inner {
+  transform: rotateY(180deg);
+}
+
+.card-face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 8px;
+  background: #1e1e1e;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .card-back {
-  width: 100%;
-  height: 100%;
+  background: #2a2a2a;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-.pattern {
-  width: 85%;
-  height: 85%;
-  border: 2px solid rgba(255,255,255,0.05);
-  background: repeating-linear-gradient(
-    45deg,
-    rgba(255,255,255,0.02),
-    rgba(255,255,255,0.02) 10px,
-    rgba(255,255,255,0.04) 10px,
-    rgba(255,255,255,0.04) 20px
-  );
-  border-radius: 4px;
-}
-
-.card-content {
-  width: 100%;
-  height: 100%;
-  padding: 5px;
+.card-front {
+  transform: rotateY(180deg);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  padding: 5px;
   color: #ffffff;
 }
 
-.card-content.red {
+.card-front.red {
   color: #ff453a;
 }
 
-.card-content.black {
+.card-front.black {
   color: #ffffff;
 }
 
@@ -177,6 +185,11 @@
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+@keyframes cardDrop {
+  0% { transform: translateY(-30px) scale(1.1); opacity: 0; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
 }
 
 @media (max-width: 480px) {
