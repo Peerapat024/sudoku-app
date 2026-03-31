@@ -27,6 +27,9 @@ export default function Menu() {
 
   return (
     <div className="menu">
+      <button className="back-btn back-btn--menu" onClick={() => dispatch({ type: 'GOTO_LOBBY' })}>
+        ← Lobby
+      </button>
       <h1 className="menu-title">Sudoku</h1>
       <p className="menu-subtitle">Select difficulty</p>
 
