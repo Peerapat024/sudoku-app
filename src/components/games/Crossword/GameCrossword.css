@@ -1,12 +1,28 @@
 .game-crossword {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  width: 100%;
-  max-width: var(--board-size);
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1rem;
+  max-width: 800px;
   margin: 0 auto;
-  gap: 12px;
-  padding: 8px 0;
+}
+
+.crossword-header {
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.crossword-header h2 {
+  font-size: 1.8rem;
+  margin: 0;
+  color: var(--text-color);
+}
+
+.puzzle-id {
+  font-size: 0.9rem;
+  color: var(--text-color-muted);
+  opacity: 0.7;
 }
 
 .crossword-grid-container {

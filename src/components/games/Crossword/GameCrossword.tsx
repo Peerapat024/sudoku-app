@@ -48,6 +48,10 @@ export default function GameCrossword() {
 
   return (
     <div className="game-crossword">
+      <div className="crossword-header">
+        <h2>{state.crossword.theme}</h2>
+        <span className="puzzle-id">#{state.crossword.puzzleId}</span>
+      </div>
       <div className="crossword-grid-container">
         <div 
           className="crossword-grid" 

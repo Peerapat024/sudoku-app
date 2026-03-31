@@ -32,5 +32,7 @@ export function getInitialCrossword(): CrosswordState {
     selectedCell: null,
     direction: 'across',
     isWin: false,
+    theme: puzzle.theme,
+    puzzleId: puzzle.id,
   };
 }

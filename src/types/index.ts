@@ -47,6 +47,8 @@ export interface CrosswordState {
   selectedCell: [number, number] | null;
   direction: 'across' | 'down';
   isWin: boolean;
+  theme: string;
+  puzzleId: string;
 }
 
 export interface WordleState {
