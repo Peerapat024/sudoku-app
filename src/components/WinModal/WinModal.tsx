@@ -13,19 +13,20 @@ const difficultyLabels: Record<Difficulty, string> = {
 
 export default function WinModal() {
   const { state, dispatch } = useGame();
+  const { isComplete, difficulty, elapsedSeconds } = state.sudoku;
 
-  if (!state.isComplete) return null;
+  if (!isComplete) return null;
 
-  const bestTime = getBestTime(state.difficulty);
-  const isNewRecord = bestTime !== null && bestTime >= state.elapsedSeconds;
+  const bestTime = getBestTime(difficulty);
+  const isNewRecord = bestTime !== null && bestTime >= elapsedSeconds;
 
   function handleNewGame() {
-    const { puzzle, solution } = generatePuzzle(state.difficulty);
-    dispatch({ type: 'START_GAME', difficulty: state.difficulty, puzzle, solution });
+    const { puzzle, solution } = generatePuzzle(difficulty);
+    dispatch({ type: 'START_SUDOKU', difficulty, puzzle, solution });
   }
 
   function handleMenu() {
-    dispatch({ type: 'GO_TO_MENU' });
+    dispatch({ type: 'GOTO_LOBBY' });
   }
 
   return (
@@ -34,8 +35,8 @@ export default function WinModal() {
         <h2 className="win-title">
           {isNewRecord ? '🏆 New Record!' : '🎉 Congratulations!'}
         </h2>
-        <p className="win-difficulty">{difficultyLabels[state.difficulty]}</p>
-        <p className="win-time">{formatTime(state.elapsedSeconds)}</p>
+        <p className="win-difficulty">{difficultyLabels[difficulty]}</p>
+        <p className="win-time">{formatTime(elapsedSeconds)}</p>
         {bestTime !== null && (
           <p className="win-best">Personal best: {formatTime(bestTime)}</p>
         )}

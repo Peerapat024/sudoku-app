@@ -4,22 +4,23 @@ import './Controls.css';
 
 export default function Actions() {
   const { state, dispatch } = useGame();
+  const { history, isComplete, isNotesMode, selectedCell } = state.sudoku;
 
   return (
     <div className="actions">
       <button
         className="action-btn"
-        onClick={() => { sounds.undo(); dispatch({ type: 'UNDO' }); }}
-        disabled={state.history.length <= 1 || state.isComplete}
+        onClick={() => { sounds.undo(); dispatch({ type: 'SUDOKU_UNDO' }); }}
+        disabled={history.length <= 1 || isComplete}
       >
         <span className="action-icon">↩</span>
         <span className="action-label">Undo</span>
       </button>
 
       <button
-        className={`action-btn ${state.isNotesMode ? 'action-btn--active' : ''}`}
-        onClick={() => { sounds.tap(); dispatch({ type: 'TOGGLE_NOTES_MODE' }); }}
-        disabled={state.isComplete}
+        className={`action-btn ${isNotesMode ? 'action-btn--active' : ''}`}
+        onClick={() => { sounds.tap(); dispatch({ type: 'SUDOKU_TOGGLE_NOTES_MODE' }); }}
+        disabled={isComplete}
       >
         <span className="action-icon">✏</span>
         <span className="action-label">Notes</span>
@@ -27,8 +28,8 @@ export default function Actions() {
 
       <button
         className="action-btn"
-        onClick={() => { sounds.hint(); dispatch({ type: 'HINT' }); }}
-        disabled={!state.selectedCell || state.isComplete}
+        onClick={() => { sounds.hint(); dispatch({ type: 'SUDOKU_HINT' }); }}
+        disabled={!selectedCell || isComplete}
       >
         <span className="action-icon">💡</span>
         <span className="action-label">Hint</span>

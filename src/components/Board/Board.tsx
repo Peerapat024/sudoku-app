@@ -5,11 +5,11 @@ import './Board.css';
 
 export default function Board() {
   const { state, dispatch } = useGame();
-  const { board, selectedCell } = state;
+  const { board, selectedCell } = state.sudoku;
   const { regionCells, sameValueCells } = useHighlight(board, selectedCell);
 
   function handleSelect(row: number, col: number) {
-    dispatch({ type: 'SELECT_CELL', row, col });
+    dispatch({ type: 'SUDOKU_SELECT_CELL', row, col });
   }
 
   return (

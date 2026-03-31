@@ -5,6 +5,6 @@ import './Timer.css';
 export default function Timer() {
   const { state } = useGame();
   return (
-    <span className="timer">{formatTime(state.elapsedSeconds)}</span>
+    <span className="timer">{formatTime(state.sudoku.elapsedSeconds)}</span>
   );
 }

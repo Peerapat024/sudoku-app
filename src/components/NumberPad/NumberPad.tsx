@@ -8,37 +8,38 @@ import './NumberPad.css';
 
 export default function NumberPad() {
   const { state, dispatch } = useGame();
-  const digitCounts = useDigitCounts(state.board);
+  const { board, isComplete, isNotesMode, selectedCell } = state.sudoku;
+  const digitCounts = useDigitCounts(board);
   const { trigger } = useWebHaptics();
-  const prevBoardRef = useRef(state.board);
-  const prevComplete = useRef(state.isComplete);
+  const prevBoardRef = useRef(board);
+  const prevComplete = useRef(isComplete);
 
   useEffect(() => {
     const prevBoard = prevBoardRef.current;
-    const hasNewConflict = state.board.some((row, r) =>
+    const hasNewConflict = board.some((row, r) =>
       row.some((cell, c) => cell.isConflict && !prevBoard[r][c].isConflict)
     );
     if (hasNewConflict) { trigger('error'); sounds.conflict(); }
-    prevBoardRef.current = state.board;
-  }, [state.board, trigger]);
+    prevBoardRef.current = board;
+  }, [board, trigger]);
 
   // Win sound
   useEffect(() => {
-    if (state.isComplete && !prevComplete.current) sounds.complete();
-    prevComplete.current = state.isComplete;
-  }, [state.isComplete]);
+    if (isComplete && !prevComplete.current) sounds.complete();
+    prevComplete.current = isComplete;
+  }, [isComplete]);
 
   function handleTap(digit: number) {
     trigger('light');
-    const cell = state.selectedCell ? state.board[state.selectedCell[0]][state.selectedCell[1]] : null;
-    if (state.isNotesMode) {
+    const cell = selectedCell ? board[selectedCell[0]][selectedCell[1]] : null;
+    if (isNotesMode) {
       sounds.note();
     } else if (cell && cell.value === digit) {
       sounds.erase();
     } else {
       sounds.place();
     }
-    dispatch({ type: 'SET_VALUE', value: digit });
+    dispatch({ type: 'SUDOKU_SET_VALUE', value: digit });
   }
 
   return (

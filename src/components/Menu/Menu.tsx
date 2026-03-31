@@ -17,7 +17,7 @@ export default function Menu() {
 
   function startGame(difficulty: Difficulty) {
     const { puzzle, solution } = generatePuzzle(difficulty);
-    dispatch({ type: 'START_GAME', difficulty, puzzle, solution });
+    dispatch({ type: 'START_SUDOKU', difficulty, puzzle, solution });
   }
 
   function getRecord(difficulty: Difficulty): string {

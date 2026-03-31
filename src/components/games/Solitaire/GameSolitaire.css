@@ -1,0 +1,193 @@
+.game-solitaire {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 1rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.solitaire-top {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+.solitaire-decks, .solitaire-foundations {
+  display: flex;
+  gap: 10px;
+}
+
+.deck-slot, .waste-slot, .foundation-slot, .tableau-pile {
+  width: 70px;
+  height: 100px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  position: relative;
+  background: rgba(0,0,0,0.2);
+}
+
+.empty-slot {
+  width: 100%;
+  height: 100%;
+  border: 2px dashed rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: rgba(255, 255, 255, 0.1);
+  font-size: 1.5rem;
+}
+
+.reset-icon {
+  cursor: pointer;
+  color: var(--color-accent);
+}
+
+.count {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background: var(--color-accent);
+  color: #fff;
+  font-size: 0.6rem;
+  padding: 2px 5px;
+  border-radius: 10px;
+  font-weight: 700;
+}
+
+.solitaire-card {
+  width: 70px;
+  height: 100px;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  position: absolute;
+  transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  user-select: none;
+  overflow: hidden;
+}
+
+.solitaire-card.selected {
+  transform: translateY(-10px) scale(1.05) !important;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.5), 0 0 10px var(--color-accent);
+  z-index: 1000 !important;
+}
+
+.solitaire-card.face-down {
+  background: #2a2a2a;
+}
+
+.card-back {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.pattern {
+  width: 85%;
+  height: 85%;
+  border: 2px solid rgba(255,255,255,0.05);
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(255,255,255,0.02),
+    rgba(255,255,255,0.02) 10px,
+    rgba(255,255,255,0.04) 10px,
+    rgba(255,255,255,0.04) 20px
+  );
+  border-radius: 4px;
+}
+
+.card-content {
+  width: 100%;
+  height: 100%;
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  color: #000;
+}
+
+.card-content.red {
+  color: #ff3b30;
+}
+
+.card-content.black {
+  color: #1a1a1a;
+}
+
+.card-corner {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+  font-weight: 800;
+  font-size: 0.9rem;
+}
+
+.card-suit-large {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2.5rem;
+  opacity: 0.15;
+}
+
+.bottom-right {
+  align-self: flex-end;
+  transform: rotate(180deg);
+}
+
+.solitaire-tableau {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.solitaire-card.stacked {
+  position: absolute;
+  top: calc(var(--stack-index) * 20px);
+  left: 0;
+}
+
+.solitaire-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(10px);
+  z-index: 2000;
+  animation: fadeIn 0.4s;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (max-width: 480px) {
+  .deck-slot, .waste-slot, .foundation-slot, .tableau-pile, .solitaire-card {
+    width: 45px;
+    height: 65px;
+  }
+  
+  .card-suit-large {
+    font-size: 1.5rem;
+  }
+  
+  .card-corner {
+    font-size: 0.6rem;
+  }
+  
+  .solitaire-card.stacked {
+    top: calc(var(--stack-index) * 12px);
+  }
+}
