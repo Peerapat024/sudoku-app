@@ -189,6 +189,6 @@
   }
   
   .solitaire-card.stacked {
-    top: calc(var(--stack-index) * 18px);
+    top: calc(var(--stack-index) * 32px);
   }
 }
