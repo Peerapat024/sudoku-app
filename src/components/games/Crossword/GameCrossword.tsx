@@ -59,7 +59,7 @@ export default function GameCrossword() {
               return (
                 <div 
                   key={`${r}-${c}`}
-                  className={`crossword-cell ${cell.isBlocked ? 'blocked' : ''} ${isSelected ? 'selected' : ''} ${isInCurrentWord ? 'highlight' : ''}`}
+                  className={`crossword-cell ${cell.isBlocked ? 'blocked' : ''} ${isSelected ? 'selected' : ''} ${isInCurrentWord ? 'highlight' : ''} ${cell.isError ? 'error' : ''} ${cell.isRevealed ? 'revealed' : ''}`}
                   onClick={() => !cell.isBlocked && dispatch({ type: 'CROSSWORD_SELECT_CELL', row: r, col: c })}
                 >
                   {!cell.isBlocked && (
@@ -72,6 +72,30 @@ export default function GameCrossword() {
               );
             })
           ))}
+        </div>
+      </div>
+
+      <div className="crossword-toolbar">
+        <button 
+          className="tool-btn" 
+          onClick={() => dispatch({ type: 'CROSSWORD_TOGGLE_DIRECTION' })}
+          title="Switch Direction"
+        >
+          🔄 {direction === 'across' ? 'Across' : 'Down'}
+        </button>
+        <button 
+          className="tool-btn" 
+          onClick={() => dispatch({ type: 'CROSSWORD_CHECK_ERRORS' })}
+          title="Check Errors"
+        >
+          ✅ Check
+        </button>
+        <div className="tool-dropdown">
+          <button className="tool-btn main">💡 Hint</button>
+          <div className="dropdown-content">
+            <button onClick={() => dispatch({ type: 'CROSSWORD_REVEAL_LETTER' })}>Reveal Letter</button>
+            <button onClick={() => dispatch({ type: 'CROSSWORD_REVEAL_WORD' })}>Reveal Word</button>
+          </div>
         </div>
       </div>
 

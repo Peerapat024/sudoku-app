@@ -434,6 +434,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const [r, col] = c.selectedCell;
       const newGrid = c.grid.map(row => row.map(cell => ({ ...cell })));
       newGrid[r][col].letter = action.letter.toUpperCase();
+      newGrid[r][col].isError = false;
       
       const isWin = newGrid.every(row => row.every(cell => cell.isBlocked || cell.letter === cell.solution));
 
@@ -495,6 +496,55 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
     case 'CROSSWORD_TOGGLE_DIRECTION':
       return { ...state, crossword: { ...state.crossword, direction: state.crossword.direction === 'across' ? 'down' : 'across' } };
+
+    case 'CROSSWORD_REVEAL_LETTER': {
+      const c = state.crossword;
+      if (!c.selectedCell || c.isWin) return state;
+      const [r, col] = c.selectedCell;
+      const newGrid = c.grid.map(row => row.map(cell => ({ ...cell })));
+      newGrid[r][col].letter = newGrid[r][col].solution;
+      newGrid[r][col].isRevealed = true;
+      newGrid[r][col].isError = false;
+      return { ...state, crossword: { ...c, grid: newGrid } };
+    }
+
+    case 'CROSSWORD_REVEAL_WORD': {
+      const c = state.crossword;
+      if (!c.selectedCell || c.isWin) return state;
+      const [r, col] = c.selectedCell;
+      
+      // Find current clue bounds
+      const clues = c.direction === 'across' ? c.acrossClues : c.downClues;
+      const currentClue = clues.find(clue => {
+        if (c.direction === 'across') {
+          return r === clue.row && col >= clue.col && col < clue.col + clue.answer.length;
+        } else {
+          return col === clue.col && r >= clue.row && r < clue.row + clue.answer.length;
+        }
+      });
+      if (!currentClue) return state;
+
+      const newGrid = c.grid.map(row => row.map(cell => ({ ...cell })));
+      for (let i = 0; i < currentClue.answer.length; i++) {
+        const row = c.direction === 'across' ? currentClue.row : currentClue.row + i;
+        const col = c.direction === 'across' ? currentClue.col + i : currentClue.col;
+        newGrid[row][col].letter = newGrid[row][col].solution;
+        newGrid[row][col].isRevealed = true;
+        newGrid[row][col].isError = false;
+      }
+      return { ...state, crossword: { ...c, grid: newGrid } };
+    }
+
+    case 'CROSSWORD_CHECK_ERRORS': {
+      const c = state.crossword;
+      const newGrid = c.grid.map(row => row.map(cell => ({ ...cell })));
+      newGrid.forEach(row => row.forEach(cell => {
+        if (!cell.isBlocked && cell.letter !== '' && cell.letter !== cell.solution) {
+          cell.isError = true;
+        }
+      }));
+      return { ...state, crossword: { ...c, grid: newGrid } };
+    }
 
     case 'CROSSWORD_RESTART':
       return { ...state, crossword: getInitialCrossword() };

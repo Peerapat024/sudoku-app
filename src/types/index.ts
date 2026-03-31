@@ -27,6 +27,8 @@ export interface CrosswordCell {
   solution: string;
   isBlocked: boolean;
   number?: number;
+  isError?: boolean;
+  isRevealed?: boolean;
 }
 
 export interface CrosswordClue {
@@ -125,5 +127,8 @@ export type GameAction =
   | { type: 'CROSSWORD_SET_LETTER'; letter: string }
   | { type: 'CROSSWORD_DELETE' }
   | { type: 'CROSSWORD_TOGGLE_DIRECTION' }
+  | { type: 'CROSSWORD_REVEAL_LETTER' }
+  | { type: 'CROSSWORD_REVEAL_WORD' }
+  | { type: 'CROSSWORD_CHECK_ERRORS' }
   | { type: 'CROSSWORD_RESTART' }
   | { type: 'WORDLE_RESTART' };
