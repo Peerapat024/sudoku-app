@@ -36,6 +36,8 @@ export function getInitialCrossword(puzzleId?: string): any {
     grid,
     direction: 'across',
     selectedCell: puzzle.cells[0] ? [puzzle.cells[0][0], puzzle.cells[0][1]] : [0, 0],
+    acrossClues: puzzle.clues?.across || [],
+    downClues: puzzle.clues?.down || [],
     isWin: false,
     theme: puzzle.theme,
     puzzleId: puzzle.id,

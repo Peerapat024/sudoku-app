@@ -25,7 +25,11 @@ export default function GameCrossword() {
     }
     
     const startCell = grid[startR][startC];
-    return `Clue for ${startCell.number} ${direction.toUpperCase()}`;
+    const clueNum = startCell.number;
+    const clueList = direction === 'across' ? state.crossword.acrossClues : state.crossword.downClues;
+    const foundClue = clueList?.find(c => c.number === clueNum);
+    
+    return foundClue ? foundClue.clue : `Clue ${clueNum} ${direction.toUpperCase()}...`;
   }, [grid, direction, selectedCell, state.crossword]);
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
@@ -54,21 +58,61 @@ export default function GameCrossword() {
     const [r, c] = selectedCell;
     const range = [];
     if (direction === 'across') {
-      let currC = c;
-      while (currC > 0 && !grid[r][currC - 1].isBlocked) currC--;
-      while (currC < grid[0].length && !grid[r][currC].isBlocked) {
-        range.push(`${r}-${currC}`);
-        currC++;
-      }
+      let startC = c;
+      while (startC > 0 && !grid[r][startC - 1].isBlocked) startC--;
+      let endC = c;
+      while (endC < grid[r].length - 1 && !grid[r][endC + 1].isBlocked) endC++;
+      for (let i = startC; i <= endC; i++) range.push(`${r}-${i}`);
     } else {
-      let currR = r;
-      while (currR > 0 && !grid[currR - 1][c].isBlocked) currR--;
-      while (currR < grid.length && !grid[currR][c].isBlocked) {
-        range.push(`${currR}-${c}`);
-        currR++;
-      }
+      let startR = r;
+      while (startR > 0 && !grid[startR - 1][c].isBlocked) startR--;
+      let endR = r;
+      while (endR < grid.length - 1 && !grid[endR + 1][c].isBlocked) endR++;
+      for (let i = startR; i <= endR; i++) range.push(`${i}-${c}`);
     }
     return range;
+  };
+
+  const handleNextClue = () => {
+    const clueList = direction === 'across' ? state.crossword.acrossClues : state.crossword.downClues;
+    if (!clueList || clueList.length === 0 || !selectedCell) return;
+    
+    const [r, c] = selectedCell;
+    let startR = r, startC = c;
+    if (direction === 'across') {
+      while (startC > 0 && !grid[r][startC - 1].isBlocked) startC--;
+    } else {
+      while (startR > 0 && !grid[startR - 1][c].isBlocked) startR--;
+    }
+    const currentNum = grid[startR][startC].number;
+    
+    const currentIndex = clueList.findIndex((clue: any) => clue.number === currentNum);
+    const nextClue = clueList[(currentIndex + 1) % clueList.length];
+    
+    if (nextClue) {
+      dispatch({ type: 'CROSSWORD_SELECT_CELL', row: nextClue.row, col: nextClue.col });
+    }
+  };
+
+  const handlePrevClue = () => {
+    const clueList = direction === 'across' ? state.crossword.acrossClues : state.crossword.downClues;
+    if (!clueList || clueList.length === 0 || !selectedCell) return;
+    
+    const [r, c] = selectedCell;
+    let startR = r, startC = c;
+    if (direction === 'across') {
+      while (startC > 0 && !grid[r][startC - 1].isBlocked) startC--;
+    } else {
+      while (startR > 0 && !grid[startR - 1][c].isBlocked) startR--;
+    }
+    const currentNum = grid[startR][startC].number;
+    
+    const currentIndex = clueList.findIndex((clue: any) => clue.number === currentNum);
+    const prevClue = clueList[(currentIndex - 1 + clueList.length) % clueList.length];
+    
+    if (prevClue) {
+      dispatch({ type: 'CROSSWORD_SELECT_CELL', row: prevClue.row, col: prevClue.col });
+    }
   };
 
   const activeWordRange = getActiveWordRange();
@@ -112,11 +156,11 @@ export default function GameCrossword() {
       </div>
 
       <div className="clue-bar">
-        <button className="clue-nav prev">‹</button>
+        <button className="clue-nav prev" onClick={handlePrevClue}>‹</button>
         <div className="current-clue-text">
           <strong>{direction.toUpperCase()}:</strong> {currentClue}
         </div>
-        <button className="clue-nav next">›</button>
+        <button className="clue-nav next" onClick={handleNextClue}>›</button>
       </div>
 
       <div className="custom-keyboard">

@@ -562,7 +562,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       
       // Find current clue bounds
       const clues = c.direction === 'across' ? c.acrossClues : c.downClues;
-      const currentClue = clues.find(clue => {
+      const currentClue = clues?.find(clue => {
         if (c.direction === 'across') {
           return r === clue.row && col >= clue.col && col < clue.col + clue.answer.length;
         } else {
