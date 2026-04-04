@@ -132,6 +132,12 @@ export default function GameCrossword() {
   // ── Cell tap: select + focus hidden input ─────────────────────────────────
   function handleCellTap(r: number, c: number) {
     if (grid[r][c].isBlocked) return;
+    // If already selected, just re-focus without re-dispatching SELECT_CELL
+    // (re-dispatching the same cell would wrongly toggle direction)
+    if (selectedCell?.[0] === r && selectedCell?.[1] === c) {
+      hiddenInputRef.current?.focus({ preventScroll: true });
+      return;
+    }
     dispatch({ type: 'CROSSWORD_SELECT_CELL', row: r, col: c });
     hiddenInputRef.current?.focus({ preventScroll: true });
   }

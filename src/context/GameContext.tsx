@@ -436,12 +436,33 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const c = state.crossword;
       if (c.grid[action.row][action.col].isBlocked) return state;
       const same = c.selectedCell && c.selectedCell[0] === action.row && c.selectedCell[1] === action.col;
+
+      // Determine which directions this cell participates in
+      const hasAcross = c.acrossClues.some(clue =>
+        action.row === clue.row && action.col >= clue.col && action.col < clue.col + clue.answer.length
+      );
+      const hasDown = c.downClues.some(clue =>
+        action.col === clue.col && action.row >= clue.row && action.row < clue.row + clue.answer.length
+      );
+
+      let newDirection = c.direction;
+      if (hasAcross && hasDown) {
+        // Cell is in both directions — toggle only when tapping the same cell
+        if (same) newDirection = c.direction === 'across' ? 'down' : 'across';
+      } else if (hasAcross) {
+        // Only across available — always force across
+        newDirection = 'across';
+      } else if (hasDown) {
+        // Only down available — always force down
+        newDirection = 'down';
+      }
+
       return {
         ...state,
         crossword: {
           ...c,
           selectedCell: [action.row, action.col],
-          direction: same ? (c.direction === 'across' ? 'down' : 'across') : c.direction
+          direction: newDirection
         }
       };
     }
