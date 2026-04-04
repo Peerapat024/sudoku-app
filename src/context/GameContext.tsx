@@ -501,7 +501,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       newGrid[r][col].letter = action.letter.toUpperCase();
       newGrid[r][col].isError = false;
       
-      const isWin = newGrid.every(row => row.every(cell => cell.isBlocked || cell.letter === cell.solution));
+      const isWin = checkCrosswordWin(newGrid, c.acrossClues, c.downClues);
 
       // Auto move cursor to next cell in word
       let nextR = r;
@@ -569,11 +569,12 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const c = state.crossword;
       if (!c.selectedCell || c.isWin) return state;
       const [r, col] = c.selectedCell;
-      const newGrid = c.grid.map(row => row.map(cell => ({ ...cell })));
-      newGrid[r][col].letter = newGrid[r][col].solution;
-      newGrid[r][col].isRevealed = true;
-      newGrid[r][col].isError = false;
-      return { ...state, crossword: { ...c, grid: newGrid } };
+      const newGrid2a = c.grid.map(row => row.map(cell => ({ ...cell })));
+      newGrid2a[r][col].letter = newGrid2a[r][col].solution;
+      newGrid2a[r][col].isRevealed = true;
+      newGrid2a[r][col].isError = false;
+      const isWinRevealLetter = checkCrosswordWin(newGrid2a, c.acrossClues, c.downClues);
+      return { ...state, crossword: { ...c, grid: newGrid2a, isWin: isWinRevealLetter } };
     }
 
     case 'CROSSWORD_REVEAL_WORD': {
@@ -592,15 +593,16 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       });
       if (!currentClue) return state;
 
-      const newGrid = c.grid.map(row => row.map(cell => ({ ...cell })));
+      const newGridRW = c.grid.map(row => row.map(cell => ({ ...cell })));
       for (let i = 0; i < currentClue.answer.length; i++) {
         const row = c.direction === 'across' ? currentClue.row : currentClue.row + i;
         const col = c.direction === 'across' ? currentClue.col + i : currentClue.col;
-        newGrid[row][col].letter = newGrid[row][col].solution;
-        newGrid[row][col].isRevealed = true;
-        newGrid[row][col].isError = false;
+        newGridRW[row][col].letter = currentClue.answer[i];
+        newGridRW[row][col].isRevealed = true;
+        newGridRW[row][col].isError = false;
       }
-      return { ...state, crossword: { ...c, grid: newGrid } };
+      const isWinRevealWord = checkCrosswordWin(newGridRW, c.acrossClues, c.downClues);
+      return { ...state, crossword: { ...c, grid: newGridRW, isWin: isWinRevealWord } };
     }
 
     case 'CROSSWORD_CHECK_ERRORS': {
@@ -629,6 +631,22 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     default:
       return state;
   }
+}
+
+function checkCrosswordWin(
+  grid: import('../types').CrosswordCell[][],
+  acrossClues: import('../types').CrosswordClue[],
+  downClues: import('../types').CrosswordClue[]
+): boolean {
+  const allClues = [...acrossClues, ...downClues];
+  if (allClues.length === 0) return false;
+  return allClues.every(clue =>
+    clue.answer.split('').every((letter, i) => {
+      const r = clue.direction === 'across' ? clue.row : clue.row + i;
+      const c = clue.direction === 'across' ? clue.col + i : clue.col;
+      return grid[r]?.[c]?.letter === letter;
+    })
+  );
 }
 
 function cloneBoard(board: Board): Board {
