@@ -34,18 +34,18 @@ const games: GameCard[] = [
     color: '#34c759'
   },
   {
-    id: 'crossword',
-    title: 'Crossword',
-    description: 'Solve the grid with clever clues.',
-    icon: '✍️',
-    color: '#ffa502'
-  },
-  {
     id: '2048',
     title: '2048',
     description: 'Join the numbers and get to the 2048 tile!',
     icon: '✨',
     color: '#af52de'
+  },
+  {
+    id: 'crossword',
+    title: 'Crossword',
+    description: 'Solve the AI-generated crossword puzzle.',
+    icon: '🔠',
+    color: '#ff3b30'
   }
 ];
 
@@ -61,7 +61,7 @@ function hasActiveGame(state: GameState, id: GameId): boolean {
     case '2048':
       return state.g2048.score > 0 && !state.g2048.isGameOver;
     case 'crossword':
-      return state.crossword.grid.some(r => r.some(c => c.letter !== '')) && !state.crossword.isWin;
+      return state.crossword.grid.length > 0 && !state.crossword.isWin && !state.crossword.isLoading;
     default:
       return false;
   }

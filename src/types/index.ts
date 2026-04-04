@@ -50,6 +50,8 @@ export interface CrosswordState {
   theme: string;
   puzzleId: string;
   revealer?: string;
+  isLoading: boolean;
+  error: string | null;
 }
 
 export interface WordleState {
@@ -135,5 +137,7 @@ export type GameAction =
   | { type: 'CROSSWORD_CHECK_ERRORS' }
   | { type: 'CROSSWORD_MOVE_CURSOR'; direction: 'up' | 'down' | 'left' | 'right' }
   | { type: 'CROSSWORD_RESTART' }
+  | { type: 'CROSSWORD_LOAD_PUZZLE'; puzzle: CrosswordState }
+  | { type: 'CROSSWORD_LOAD_ERROR'; error: string }
   | { type: 'WORDLE_RESTART' }
   | { type: 'RESET_GAME'; gameId: GameId };

@@ -593,6 +593,12 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return { ...state, crossword: { ...c, grid: newGrid } };
     }
 
+    case 'CROSSWORD_LOAD_PUZZLE':
+      return { ...state, crossword: action.puzzle };
+
+    case 'CROSSWORD_LOAD_ERROR':
+      return { ...state, crossword: { ...state.crossword, isLoading: false, error: action.error } };
+
     case 'CROSSWORD_RESTART':
       return { ...state, crossword: getInitialCrossword() };
 

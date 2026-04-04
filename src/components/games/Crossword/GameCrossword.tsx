@@ -1,189 +1,253 @@
-import { useEffect, useCallback, useMemo } from 'react';
+import { useEffect, useCallback, useRef, useState } from 'react';
 import { useGame } from '../../../context/GameContext';
+import { fetchCrosswordPuzzle } from '../../../lib/crossword';
+import { CrosswordClue } from '../../../types';
 import './GameCrossword.css';
 
-const KEYBOARD_ROWS = [
-  ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
-  ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
-  ['Z', 'X', 'C', 'V', 'B', 'N', 'M', '⌫']
-];
+const THEMES = ['animals', 'food', 'sports', 'science', 'history', 'geography', 'music', 'movies'];
+const DIFFICULTIES = ['easy', 'medium', 'hard'] as const;
 
 export default function GameCrossword() {
   const { state, dispatch } = useGame();
-  const { grid, direction, selectedCell, isWin, theme, puzzleId } = state.crossword;
+  const { grid, acrossClues, downClues, selectedCell, direction, isWin, isLoading, error, theme } = state.crossword;
+  const [activeClue, setActiveClue] = useState<CrosswordClue | null>(null);
+  const [selectedTheme, setSelectedTheme] = useState('animals');
+  const [selectedDifficulty, setSelectedDifficulty] = useState<typeof DIFFICULTIES[number]>('medium');
+  const clueListRef = useRef<HTMLDivElement>(null);
+  const hasFetched = useRef(false);
 
-  const currentClue = useMemo(() => {
-    if (!selectedCell) return null;
-    const [r, c] = selectedCell;
-    
-    // Find the word starting cell
-    let startR = r, startC = c;
-    if (direction === 'across') {
-      while (startC > 0 && !grid[r][startC - 1].isBlocked) startC--;
-    } else {
-      while (startR > 0 && !grid[startR - 1][c].isBlocked) startR--;
+  // ── Fetch puzzle ───────────────────────────────────────────────────────────
+  const loadPuzzle = useCallback(async (theme?: string, difficulty?: typeof DIFFICULTIES[number]) => {
+    dispatch({ type: 'CROSSWORD_RESTART' }); // reset to loading state
+    try {
+      const puzzle = await fetchCrosswordPuzzle({ theme, difficulty });
+      dispatch({ type: 'CROSSWORD_LOAD_PUZZLE', puzzle });
+    } catch (e) {
+      dispatch({ type: 'CROSSWORD_LOAD_ERROR', error: (e as Error).message ?? 'Failed to fetch puzzle' });
     }
-    
-    const startCell = grid[startR][startC];
-    const clueNum = startCell.number;
-    const clueList = direction === 'across' ? state.crossword.acrossClues : state.crossword.downClues;
-    const foundClue = clueList?.find(c => c.number === clueNum);
-    
-    return foundClue ? foundClue.clue : `Clue ${clueNum} ${direction.toUpperCase()}...`;
-  }, [grid, direction, selectedCell, state.crossword]);
+  }, [dispatch]);
 
+  useEffect(() => {
+    if (!hasFetched.current && isLoading && grid.length === 0) {
+      hasFetched.current = true;
+      loadPuzzle(selectedTheme, selectedDifficulty);
+    }
+  }, [isLoading, grid.length, loadPuzzle, selectedTheme, selectedDifficulty]);
+
+  // ── Active clue derivation ────────────────────────────────────────────────
+  useEffect(() => {
+    if (!selectedCell) { setActiveClue(null); return; }
+    const [r, c] = selectedCell;
+    const clues = direction === 'across' ? acrossClues : downClues;
+    const found = clues.find((clue) => {
+      if (direction === 'across') {
+        return r === clue.row && c >= clue.col && c < clue.col + clue.answer.length;
+      } else {
+        return c === clue.col && r >= clue.row && r < clue.row + clue.answer.length;
+      }
+    });
+    setActiveClue(found ?? null);
+
+    // Scroll active clue into view
+    if (found) {
+      const el = document.getElementById(`clue-${found.direction}-${found.number}`);
+      el?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+  }, [selectedCell, direction, acrossClues, downClues]);
+
+  // ── Keyboard handling ─────────────────────────────────────────────────────
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (isWin) return;
-    if (e.key === 'Backspace') dispatch({ type: 'CROSSWORD_DELETE' });
-    else if (e.key === ' ') { e.preventDefault(); dispatch({ type: 'CROSSWORD_TOGGLE_DIRECTION' }); }
-    else if (e.key === 'ArrowUp') dispatch({ type: 'CROSSWORD_MOVE_CURSOR', direction: 'up' });
-    else if (e.key === 'ArrowDown') dispatch({ type: 'CROSSWORD_MOVE_CURSOR', direction: 'down' });
-    else if (e.key === 'ArrowLeft') dispatch({ type: 'CROSSWORD_MOVE_CURSOR', direction: 'left' });
-    else if (e.key === 'ArrowRight') dispatch({ type: 'CROSSWORD_MOVE_CURSOR', direction: 'right' });
-    else if (e.key.length === 1 && /[a-zA-Z0-9]/.test(e.key)) dispatch({ type: 'CROSSWORD_SET_LETTER', letter: e.key });
-  }, [dispatch, isWin]);
+    if (isWin || isLoading) return;
+    if (e.key === 'ArrowUp') { e.preventDefault(); dispatch({ type: 'CROSSWORD_MOVE_CURSOR', direction: 'up' }); }
+    else if (e.key === 'ArrowDown') { e.preventDefault(); dispatch({ type: 'CROSSWORD_MOVE_CURSOR', direction: 'down' }); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); dispatch({ type: 'CROSSWORD_MOVE_CURSOR', direction: 'left' }); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); dispatch({ type: 'CROSSWORD_MOVE_CURSOR', direction: 'right' }); }
+    else if (e.key === 'Tab') { e.preventDefault(); dispatch({ type: 'CROSSWORD_TOGGLE_DIRECTION' }); }
+    else if (e.key === 'Backspace') dispatch({ type: 'CROSSWORD_DELETE' });
+    else if (e.key.length === 1 && e.key.match(/[a-zA-Z]/)) {
+      dispatch({ type: 'CROSSWORD_SET_LETTER', letter: e.key.toUpperCase() });
+    }
+  }, [dispatch, isWin, isLoading]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
 
-  const onKeyClick = (key: string) => {
-    if (key === '⌫') dispatch({ type: 'CROSSWORD_DELETE' });
-    else dispatch({ type: 'CROSSWORD_SET_LETTER', letter: key });
-  };
+  // ── Highlight helpers ─────────────────────────────────────────────────────
+  function getCellClass(r: number, c: number): string {
+    const cell = grid[r][c];
+    if (cell.isBlocked) return 'cw-cell blocked';
 
-  const getActiveWordRange = () => {
-    if (!selectedCell) return [];
-    const [r, c] = selectedCell;
-    const range = [];
-    if (direction === 'across') {
-      let startC = c;
-      while (startC > 0 && !grid[r][startC - 1].isBlocked) startC--;
-      let endC = c;
-      while (endC < grid[r].length - 1 && !grid[r][endC + 1].isBlocked) endC++;
-      for (let i = startC; i <= endC; i++) range.push(`${r}-${i}`);
-    } else {
-      let startR = r;
-      while (startR > 0 && !grid[startR - 1][c].isBlocked) startR--;
-      let endR = r;
-      while (endR < grid.length - 1 && !grid[endR + 1][c].isBlocked) endR++;
-      for (let i = startR; i <= endR; i++) range.push(`${i}-${c}`);
+    const isSelected = selectedCell?.[0] === r && selectedCell?.[1] === c;
+    let isWordHighlight = false;
+    if (selectedCell && activeClue) {
+      const [, ] = selectedCell;
+      if (direction === 'across') {
+        isWordHighlight = r === activeClue.row && c >= activeClue.col && c < activeClue.col + activeClue.answer.length;
+      } else {
+        isWordHighlight = c === activeClue.col && r >= activeClue.row && r < activeClue.row + activeClue.answer.length;
+      }
     }
-    return range;
-  };
 
-  const handleNextClue = () => {
-    const clueList = direction === 'across' ? state.crossword.acrossClues : state.crossword.downClues;
-    if (!clueList || clueList.length === 0 || !selectedCell) return;
-    
-    const [r, c] = selectedCell;
-    let startR = r, startC = c;
-    if (direction === 'across') {
-      while (startC > 0 && !grid[r][startC - 1].isBlocked) startC--;
-    } else {
-      while (startR > 0 && !grid[startR - 1][c].isBlocked) startR--;
-    }
-    const currentNum = grid[startR][startC].number;
-    
-    const currentIndex = clueList.findIndex((clue: any) => clue.number === currentNum);
-    const nextClue = clueList[(currentIndex + 1) % clueList.length];
-    
-    if (nextClue) {
-      dispatch({ type: 'CROSSWORD_SELECT_CELL', row: nextClue.row, col: nextClue.col });
-    }
-  };
+    return [
+      'cw-cell',
+      isSelected ? 'selected' : '',
+      isWordHighlight && !isSelected ? 'highlighted' : '',
+      cell.isError ? 'error' : '',
+      cell.isRevealed ? 'revealed' : '',
+    ].filter(Boolean).join(' ');
+  }
 
-  const handlePrevClue = () => {
-    const clueList = direction === 'across' ? state.crossword.acrossClues : state.crossword.downClues;
-    if (!clueList || clueList.length === 0 || !selectedCell) return;
-    
-    const [r, c] = selectedCell;
-    let startR = r, startC = c;
-    if (direction === 'across') {
-      while (startC > 0 && !grid[r][startC - 1].isBlocked) startC--;
-    } else {
-      while (startR > 0 && !grid[startR - 1][c].isBlocked) startR--;
-    }
-    const currentNum = grid[startR][startC].number;
-    
-    const currentIndex = clueList.findIndex((clue: any) => clue.number === currentNum);
-    const prevClue = clueList[(currentIndex - 1 + clueList.length) % clueList.length];
-    
-    if (prevClue) {
-      dispatch({ type: 'CROSSWORD_SELECT_CELL', row: prevClue.row, col: prevClue.col });
-    }
-  };
+  // ── Clue click ────────────────────────────────────────────────────────────
+  function handleClueClick(clue: CrosswordClue) {
+    if (direction !== clue.direction) dispatch({ type: 'CROSSWORD_TOGGLE_DIRECTION' });
+    dispatch({ type: 'CROSSWORD_SELECT_CELL', row: clue.row, col: clue.col });
+  }
 
-  const activeWordRange = getActiveWordRange();
+  // ── New game ──────────────────────────────────────────────────────────────
+  function handleNewGame() {
+    hasFetched.current = false;
+    loadPuzzle(selectedTheme, selectedDifficulty);
+  }
+
+  // ── Loading state ─────────────────────────────────────────────────────────
+  if (isLoading) {
+    return (
+      <div className="crossword-loading">
+        <div className="cw-spinner" />
+        <p>Generating puzzle…</p>
+        <p className="cw-loading-sub">Fetching a fresh crossword</p>
+      </div>
+    );
+  }
+
+  // ── Error state ───────────────────────────────────────────────────────────
+  if (error || grid.length === 0) {
+    return (
+      <div className="crossword-error">
+        <div className="cw-error-icon">⚠️</div>
+        <h3>Couldn't load puzzle</h3>
+        <p>{error ?? 'No puzzle data returned.'}</p>
+        <p className="cw-error-hint">Make sure your API key is set in <code>VITE_CROSSWORD_API_KEY</code></p>
+        <button className="cw-btn primary" onClick={handleNewGame}>Try Again</button>
+      </div>
+    );
+  }
+
+  const gridSize = grid.length;
 
   return (
-    <div className="full-crossword">
-      <div className="crossword-hud">
-        <div className="hud-meta">
-          <span className="hud-id">#{puzzleId}</span>
-          <span className="hud-theme">{theme}</span>
-        </div>
-        <div className="hud-word-preview">
-          {activeWordRange.map(id => {
-            const [r, c] = id.split('-').map(Number);
-            return (
-              <span key={id} className={`preview-letter ${selectedCell?.[0] === r && selectedCell?.[1] === c ? 'active' : ''}`}>
-                {grid[r][c].letter || '_'}
-              </span>
-            );
-          })}
-        </div>
+    <div className="game-crossword">
+      {/* ── Controls bar ──────────────────────────────────────── */}
+      <div className="cw-controls">
+        <select
+          className="cw-select"
+          value={selectedTheme}
+          onChange={e => setSelectedTheme(e.target.value)}
+        >
+          {THEMES.map(t => (
+            <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>
+          ))}
+        </select>
+
+        <select
+          className="cw-select"
+          value={selectedDifficulty}
+          onChange={e => setSelectedDifficulty(e.target.value as typeof DIFFICULTIES[number])}
+        >
+          {DIFFICULTIES.map(d => (
+            <option key={d} value={d}>{d.charAt(0).toUpperCase() + d.slice(1)}</option>
+          ))}
+        </select>
+
+        <button className="cw-btn primary" onClick={handleNewGame}>New Puzzle</button>
+        <button className="cw-btn" onClick={() => dispatch({ type: 'CROSSWORD_CHECK_ERRORS' })}>Check</button>
+        <button className="cw-btn" onClick={() => dispatch({ type: 'CROSSWORD_REVEAL_WORD' })}>Reveal Word</button>
       </div>
 
-      <div className="crossword-grid-container">
-        <div className="crossword-grid" style={{ gridTemplateColumns: `repeat(${grid[0].length}, 1fr)` }}>
-          {grid.map((row, r) => row.map((cell, c) => (
-            <div
-              key={`${r}-${c}`}
-              className={`grid-cell ${cell.isBlocked ? 'blocked' : ''} ${selectedCell?.[0] === r && selectedCell?.[1] === c ? 'selected' : ''} ${activeWordRange.includes(`${r}-${c}`) ? 'in-word' : ''} ${cell.isError ? 'error' : ''}`}
-              onClick={() => !cell.isBlocked && dispatch({ type: 'CROSSWORD_SELECT_CELL', row: r, col: c })}
-            >
-              {!cell.isBlocked && (
-                <>
-                  {cell.number && <span className="cell-number">{cell.number}</span>}
-                  <span className="cell-letter">{cell.letter}</span>
-                </>
-              )}
-            </div>
-          )))}
-        </div>
+      {/* ── Theme badge ───────────────────────────────────────── */}
+      <div className="cw-theme-badge">
+        <span className="cw-theme-label">Theme:</span>
+        <span className="cw-theme-val">{theme || 'General'}</span>
+        <span className="cw-direction-toggle" onClick={() => dispatch({ type: 'CROSSWORD_TOGGLE_DIRECTION' })}>
+          {direction === 'across' ? '→ Across' : '↓ Down'} <span className="cw-tab-hint">Tab</span>
+        </span>
       </div>
 
-      <div className="clue-bar">
-        <button className="clue-nav prev" onClick={handlePrevClue}>‹</button>
-        <div className="current-clue-text">
-          <strong>{direction.toUpperCase()}:</strong> {currentClue}
+      {/* ── Active clue ───────────────────────────────────────── */}
+      {activeClue && (
+        <div className="cw-active-clue">
+          <span className="cw-active-clue-num">{activeClue.number}{activeClue.direction === 'across' ? 'A' : 'D'}</span>
+          <span className="cw-active-clue-text">{activeClue.clue}</span>
         </div>
-        <button className="clue-nav next" onClick={handleNextClue}>›</button>
-      </div>
+      )}
 
-      <div className="custom-keyboard">
-        {KEYBOARD_ROWS.map((row, i) => (
-          <div key={i} className="keyboard-row">
-            {row.map(key => (
-              <button key={key} className={`key ${key === '⌫' ? 'backspace' : ''}`} onClick={() => onKeyClick(key)}>
-                {key}
-              </button>
+      {/* ── Main layout ───────────────────────────────────────── */}
+      <div className="cw-main">
+        {/* Grid */}
+        <div
+          className="cw-grid"
+          style={{ '--grid-size': gridSize } as React.CSSProperties}
+        >
+          {grid.map((row, r) =>
+            row.map((cell, c) => (
+              <div
+                key={`${r}-${c}`}
+                className={getCellClass(r, c)}
+                onClick={() => !cell.isBlocked && dispatch({ type: 'CROSSWORD_SELECT_CELL', row: r, col: c })}
+              >
+                {cell.number && <span className="cw-cell-num">{cell.number}</span>}
+                {!cell.isBlocked && <span className="cw-cell-letter">{cell.letter}</span>}
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Clue panel */}
+        <div className="cw-clues" ref={clueListRef}>
+          <div className="cw-clue-section">
+            <h3 className="cw-clue-heading">Across</h3>
+            {acrossClues.map(clue => (
+              <div
+                key={clue.number}
+                id={`clue-across-${clue.number}`}
+                className={`cw-clue-item ${activeClue?.number === clue.number && activeClue?.direction === 'across' ? 'active' : ''}`}
+                onClick={() => handleClueClick(clue)}
+              >
+                <span className="cw-clue-num">{clue.number}.</span>
+                <span className="cw-clue-text">{clue.clue}</span>
+                <span className="cw-clue-len">({clue.answer.length})</span>
+              </div>
             ))}
           </div>
-        ))}
+
+          <div className="cw-clue-section">
+            <h3 className="cw-clue-heading">Down</h3>
+            {downClues.map(clue => (
+              <div
+                key={clue.number}
+                id={`clue-down-${clue.number}`}
+                className={`cw-clue-item ${activeClue?.number === clue.number && activeClue?.direction === 'down' ? 'active' : ''}`}
+                onClick={() => handleClueClick(clue)}
+              >
+                <span className="cw-clue-num">{clue.number}.</span>
+                <span className="cw-clue-text">{clue.clue}</span>
+                <span className="cw-clue-len">({clue.answer.length})</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
+      {/* ── Win overlay ───────────────────────────────────────── */}
       {isWin && (
-        <div className="crossword-overlay">
-          <div className="overlay-content">
-            <div className="win-emoji">🎉</div>
-            <h2>Magnificent!</h2>
-            <p>You conquered the full grid.</p>
-            <button className="restart-btn" onClick={() => dispatch({ type: 'CROSSWORD_RESTART' })}>
-              Next Puzzle
-            </button>
+        <div className="cw-win-overlay">
+          <div className="cw-win-card">
+            <div className="cw-win-emoji">🎉</div>
+            <h2>Puzzle Complete!</h2>
+            <p>Excellent work! You solved the <strong>{theme}</strong> crossword.</p>
+            <button className="cw-btn primary large" onClick={handleNewGame}>Play Again</button>
           </div>
         </div>
       )}
