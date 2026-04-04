@@ -32,12 +32,19 @@ export default function GameCrossword() {
   const loadPuzzle = useCallback(async (t?: string, d?: typeof DIFFICULTIES[number]) => {
     dispatch({ type: 'CROSSWORD_RESTART' });
     
-    // If 'random', pick a real theme from the list
+    // VARIETY INJECTION:
+    // Some APIs cache static puzzles per theme. We'll slightly vary the 
+    // theme string to force the 'Generator' to work harder.
     let finalTheme = t;
     if (t === 'random') {
       const realThemes = THEMES.filter(x => x !== 'random');
       finalTheme = realThemes[Math.floor(Math.random() * realThemes.length)];
     }
+
+    // Add a variety suffix (20% chance of 'list', 'general', 'extra', etc.)
+    const variants = ['', ' list', ' general', ' advanced', ' basics', ' today'];
+    const v = variants[Math.floor(Math.random() * variants.length)];
+    finalTheme = (finalTheme || 'general') + v;
 
     try {
       const puzzle = await fetchCrosswordPuzzle({ theme: finalTheme, difficulty: d });
