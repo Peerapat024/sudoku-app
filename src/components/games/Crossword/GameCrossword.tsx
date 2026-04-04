@@ -7,6 +7,13 @@ import './GameCrossword.css';
 const THEMES = ['animals', 'food', 'sports', 'science', 'history', 'geography', 'music', 'movies'];
 const DIFFICULTIES = ['easy', 'medium', 'hard'] as const;
 
+// ── Haptic feedback helper ──────────────────────────────────────────────────
+const haptic = (pattern: number | number[]) => {
+  if (typeof navigator !== 'undefined' && navigator.vibrate) {
+    navigator.vibrate(pattern);
+  }
+};
+
 export default function GameCrossword() {
   const { state, dispatch } = useGame();
   const { grid, acrossClues, downClues, selectedCell, direction, isWin, isLoading, error, theme } = state.crossword;
@@ -15,7 +22,6 @@ export default function GameCrossword() {
   const [selectedDifficulty, setSelectedDifficulty] = useState<typeof DIFFICULTIES[number]>('medium');
   const clueListRef = useRef<HTMLDivElement>(null);
   const hasFetched = useRef(false);
-  // Hidden input ref for native mobile keyboard
   const hiddenInputRef = useRef<HTMLInputElement>(null);
 
   // ── Fetch puzzle ───────────────────────────────────────────────────────────
@@ -35,6 +41,13 @@ export default function GameCrossword() {
       loadPuzzle(selectedTheme, selectedDifficulty);
     }
   }, [isLoading, grid.length, loadPuzzle, selectedTheme, selectedDifficulty]);
+
+  // ── Win effect ────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (isWin) {
+      haptic([100, 50, 100]);
+    }
+  }, [isWin]);
 
   // ── Focus hidden input whenever a cell is selected ────────────────────────
   useEffect(() => {
@@ -69,35 +82,37 @@ export default function GameCrossword() {
     if (!val) return;
     const letter = val[val.length - 1];
     if (letter && letter.match(/[a-zA-Z]/)) {
+      haptic(15);
       dispatch({ type: 'CROSSWORD_SET_LETTER', letter: letter.toUpperCase() });
     }
-    // Reset so the next keystroke is always captured fresh
     e.currentTarget.value = '';
   }, [dispatch]);
 
   const handleHiddenKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
     if (isWin || isLoading) return;
     if (e.key === 'Backspace') {
+      haptic(10);
       dispatch({ type: 'CROSSWORD_DELETE' });
       e.preventDefault();
-    } else if (e.key === 'ArrowUp') { e.preventDefault(); dispatch({ type: 'CROSSWORD_MOVE_CURSOR', direction: 'up' }); }
-    else if (e.key === 'ArrowDown') { e.preventDefault(); dispatch({ type: 'CROSSWORD_MOVE_CURSOR', direction: 'down' }); }
-    else if (e.key === 'ArrowLeft') { e.preventDefault(); dispatch({ type: 'CROSSWORD_MOVE_CURSOR', direction: 'left' }); }
-    else if (e.key === 'ArrowRight') { e.preventDefault(); dispatch({ type: 'CROSSWORD_MOVE_CURSOR', direction: 'right' }); }
-    else if (e.key === 'Tab') { e.preventDefault(); dispatch({ type: 'CROSSWORD_TOGGLE_DIRECTION' }); }
+    } else if (e.key === 'ArrowUp') { e.preventDefault(); haptic(5); dispatch({ type: 'CROSSWORD_MOVE_CURSOR', direction: 'up' }); }
+    else if (e.key === 'ArrowDown') { e.preventDefault(); haptic(5); dispatch({ type: 'CROSSWORD_MOVE_CURSOR', direction: 'down' }); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); haptic(5); dispatch({ type: 'CROSSWORD_MOVE_CURSOR', direction: 'left' }); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); haptic(5); dispatch({ type: 'CROSSWORD_MOVE_CURSOR', direction: 'right' }); }
+    else if (e.key === 'Tab') { e.preventDefault(); haptic(10); dispatch({ type: 'CROSSWORD_TOGGLE_DIRECTION' }); }
   }, [dispatch, isWin, isLoading]);
 
-  // ── Desktop keyboard fallback (window-level) ──────────────────────────────
+  // ── Desktop keyboard fallback ─────────────────────────────────────────────
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if (document.activeElement === hiddenInputRef.current) return;
     if (isWin || isLoading) return;
-    if (e.key === 'ArrowUp') { e.preventDefault(); dispatch({ type: 'CROSSWORD_MOVE_CURSOR', direction: 'up' }); }
-    else if (e.key === 'ArrowDown') { e.preventDefault(); dispatch({ type: 'CROSSWORD_MOVE_CURSOR', direction: 'down' }); }
-    else if (e.key === 'ArrowLeft') { e.preventDefault(); dispatch({ type: 'CROSSWORD_MOVE_CURSOR', direction: 'left' }); }
-    else if (e.key === 'ArrowRight') { e.preventDefault(); dispatch({ type: 'CROSSWORD_MOVE_CURSOR', direction: 'right' }); }
-    else if (e.key === 'Tab') { e.preventDefault(); dispatch({ type: 'CROSSWORD_TOGGLE_DIRECTION' }); }
-    else if (e.key === 'Backspace') dispatch({ type: 'CROSSWORD_DELETE' });
+    if (e.key === 'ArrowUp') { e.preventDefault(); haptic(5); dispatch({ type: 'CROSSWORD_MOVE_CURSOR', direction: 'up' }); }
+    else if (e.key === 'ArrowDown') { e.preventDefault(); haptic(5); dispatch({ type: 'CROSSWORD_MOVE_CURSOR', direction: 'down' }); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); haptic(5); dispatch({ type: 'CROSSWORD_MOVE_CURSOR', direction: 'left' }); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); haptic(5); dispatch({ type: 'CROSSWORD_MOVE_CURSOR', direction: 'right' }); }
+    else if (e.key === 'Tab') { e.preventDefault(); haptic(10); dispatch({ type: 'CROSSWORD_TOGGLE_DIRECTION' }); }
+    else if (e.key === 'Backspace') { haptic(10); dispatch({ type: 'CROSSWORD_DELETE' }); }
     else if (e.key.length === 1 && e.key.match(/[a-zA-Z]/)) {
+      haptic(15);
       dispatch({ type: 'CROSSWORD_SET_LETTER', letter: e.key.toUpperCase() });
     }
   }, [dispatch, isWin, isLoading]);
@@ -124,38 +139,47 @@ export default function GameCrossword() {
       'cw-cell',
       isSelected ? 'selected' : '',
       isWordHighlight && !isSelected ? 'highlighted' : '',
-      cell.isError ? 'error' : '',
+      cell.isError ? 'error shake' : '',
       cell.isRevealed ? 'revealed' : '',
+      cell.letter && !cell.isError ? 'pop' : '',
     ].filter(Boolean).join(' ');
   }
 
-  // ── Cell tap: select + focus hidden input ─────────────────────────────────
   function handleCellTap(r: number, c: number) {
     if (grid[r][c].isBlocked) return;
-    // If already selected, just re-focus without re-dispatching SELECT_CELL
-    // (re-dispatching the same cell would wrongly toggle direction)
     if (selectedCell?.[0] === r && selectedCell?.[1] === c) {
       hiddenInputRef.current?.focus({ preventScroll: true });
       return;
     }
+    haptic(10);
     dispatch({ type: 'CROSSWORD_SELECT_CELL', row: r, col: c });
     hiddenInputRef.current?.focus({ preventScroll: true });
   }
 
-  // ── Clue click ────────────────────────────────────────────────────────────
   function handleClueClick(clue: CrosswordClue) {
+    haptic(10);
     if (direction !== clue.direction) dispatch({ type: 'CROSSWORD_TOGGLE_DIRECTION' });
     dispatch({ type: 'CROSSWORD_SELECT_CELL', row: clue.row, col: clue.col });
     hiddenInputRef.current?.focus({ preventScroll: true });
   }
 
-  // ── New game ──────────────────────────────────────────────────────────────
-  function handleNewGame() {
-    hasFetched.current = false;
-    loadPuzzle(selectedTheme, selectedDifficulty);
+  function handleAction(type: 'CHECK' | 'REVEAL_WORD' | 'NEW') {
+    if (type === 'CHECK') {
+      const hasErrors = grid.some(row => row.some(cell => !cell.isBlocked && cell.letter && cell.letter !== cell.solution));
+      haptic(hasErrors ? 150 : 20);
+      dispatch({ type: 'CROSSWORD_CHECK_ERRORS' });
+    }
+    if (type === 'REVEAL_WORD') {
+      haptic(25);
+      dispatch({ type: 'CROSSWORD_REVEAL_WORD' });
+    }
+    if (type === 'NEW') {
+      haptic(15);
+      hasFetched.current = false;
+      loadPuzzle(selectedTheme, selectedDifficulty);
+    }
   }
 
-  // ── Loading state ─────────────────────────────────────────────────────────
   if (isLoading) {
     return (
       <div className="crossword-loading">
@@ -166,7 +190,6 @@ export default function GameCrossword() {
     );
   }
 
-  // ── Error state ───────────────────────────────────────────────────────────
   if (error || grid.length === 0) {
     return (
       <div className="crossword-error">
@@ -174,7 +197,7 @@ export default function GameCrossword() {
         <h3>Couldn't load puzzle</h3>
         <p>{error ?? 'No puzzle data returned.'}</p>
         <p className="cw-error-hint">Make sure your API key is set in <code>VITE_CROSSWORD_API_KEY</code></p>
-        <button className="cw-btn primary" onClick={handleNewGame}>Try Again</button>
+        <button className="cw-btn primary" onClick={() => handleAction('NEW')}>Try Again</button>
       </div>
     );
   }
@@ -183,11 +206,6 @@ export default function GameCrossword() {
 
   return (
     <div className="game-crossword">
-      {/*
-        Hidden input — must use opacity:0 + position:fixed (NOT display:none)
-        so iOS/Android will actually focus it and show the native keyboard.
-        font-size:16px prevents iOS auto-zoom on focus.
-      */}
       <input
         ref={hiddenInputRef}
         className="cw-hidden-input"
@@ -203,7 +221,6 @@ export default function GameCrossword() {
         tabIndex={-1}
       />
 
-      {/* ── Controls bar ──────────────────────────────────────── */}
       <div className="cw-controls">
         <select
           className="cw-select"
@@ -225,25 +242,23 @@ export default function GameCrossword() {
           ))}
         </select>
 
-        <button className="cw-btn primary" onClick={handleNewGame}>New Puzzle</button>
-        <button className="cw-btn" onClick={() => dispatch({ type: 'CROSSWORD_CHECK_ERRORS' })}>Check</button>
-        <button className="cw-btn" onClick={() => dispatch({ type: 'CROSSWORD_REVEAL_WORD' })}>Reveal Word</button>
+        <button className="cw-btn primary" onClick={() => handleAction('NEW')}>New Puzzle</button>
+        <button className="cw-btn" onClick={() => handleAction('CHECK')}>Check</button>
+        <button className="cw-btn" onClick={() => handleAction('REVEAL_WORD')}>Reveal Word</button>
       </div>
 
-      {/* ── Theme badge ───────────────────────────────────────── */}
       <div className="cw-theme-badge">
         <span className="cw-theme-label">Theme:</span>
         <span className="cw-theme-val">{theme || 'General'}</span>
-        <span className="cw-direction-toggle" onClick={() => dispatch({ type: 'CROSSWORD_TOGGLE_DIRECTION' })}>
+        <span className="cw-direction-toggle" onClick={() => { haptic(10); dispatch({ type: 'CROSSWORD_TOGGLE_DIRECTION' }); }}>
           {direction === 'across' ? '→ Across' : '↓ Down'} <span className="cw-tab-hint">Tab</span>
         </span>
       </div>
 
-      {/* ── Active clue — tap to re-open keyboard ─────────────── */}
       {activeClue && (
         <div
           className="cw-active-clue"
-          onClick={() => hiddenInputRef.current?.focus({ preventScroll: true })}
+          onClick={() => { haptic(5); hiddenInputRef.current?.focus({ preventScroll: true }); }}
         >
           <span className="cw-active-clue-num">{activeClue.number}{activeClue.direction === 'across' ? 'A' : 'D'}</span>
           <span className="cw-active-clue-text">{activeClue.clue}</span>
@@ -251,9 +266,7 @@ export default function GameCrossword() {
         </div>
       )}
 
-      {/* ── Main layout ───────────────────────────────────────── */}
       <div className="cw-main">
-        {/* Grid */}
         <div
           className="cw-grid"
           style={{ '--grid-size': gridSize } as React.CSSProperties}
@@ -266,13 +279,19 @@ export default function GameCrossword() {
                 onClick={() => handleCellTap(r, c)}
               >
                 {cell.number && <span className="cw-cell-num">{cell.number}</span>}
-                {!cell.isBlocked && <span className="cw-cell-letter">{cell.letter}</span>}
+                {!cell.isBlocked && (
+                  <span 
+                    key={cell.letter} // Triggers pop animation on change
+                    className="cw-cell-letter"
+                  >
+                    {cell.letter}
+                  </span>
+                )}
               </div>
             ))
           )}
         </div>
 
-        {/* Clue panel */}
         <div className="cw-clues" ref={clueListRef}>
           <div className="cw-clue-section">
             <h3 className="cw-clue-heading">Across</h3>
@@ -308,14 +327,13 @@ export default function GameCrossword() {
         </div>
       </div>
 
-      {/* ── Win overlay ───────────────────────────────────────── */}
       {isWin && (
         <div className="cw-win-overlay">
           <div className="cw-win-card">
             <div className="cw-win-emoji">🎉</div>
             <h2>Puzzle Complete!</h2>
             <p>Excellent work! You solved the <strong>{theme}</strong> crossword.</p>
-            <button className="cw-btn primary large" onClick={handleNewGame}>Play Again</button>
+            <button className="cw-btn primary large" onClick={() => handleAction('NEW')}>Play Again</button>
           </div>
         </div>
       )}
