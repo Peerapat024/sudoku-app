@@ -182,6 +182,8 @@ export async function fetchCrosswordPuzzle(params?: {
   if (params?.theme) url.searchParams.set('theme', params.theme);
   if (params?.difficulty) url.searchParams.set('difficulty', params.difficulty);
   if (params?.size) url.searchParams.set('size', params.size);
+  // Cache busting
+  url.searchParams.set('_cb', Date.now().toString());
 
   const response = await fetch(url.toString(), {
     headers: {

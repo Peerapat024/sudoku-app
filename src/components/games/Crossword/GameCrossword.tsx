@@ -4,7 +4,7 @@ import { fetchCrosswordPuzzle } from '../../../lib/crossword';
 import { CrosswordClue } from '../../../types';
 import './GameCrossword.css';
 
-const THEMES = ['animals', 'food', 'sports', 'science', 'history', 'geography', 'music', 'movies'];
+const THEMES = ['random', 'animals', 'food', 'sports', 'science', 'history', 'geography', 'music', 'movies', 'technology', 'nature', 'literature', 'art', 'travel'];
 const DIFFICULTIES = ['easy', 'medium', 'hard'] as const;
 
 // ── Haptic feedback helper ──────────────────────────────────────────────────
@@ -18,7 +18,7 @@ export default function GameCrossword() {
   const { state, dispatch } = useGame();
   const { grid, acrossClues, downClues, selectedCell, direction, isWin, isLoading, error, theme } = state.crossword;
   const [activeClue, setActiveClue] = useState<CrosswordClue | null>(null);
-  const [selectedTheme, setSelectedTheme] = useState('animals');
+  const [selectedTheme, setSelectedTheme] = useState('random');
   const [selectedDifficulty, setSelectedDifficulty] = useState<typeof DIFFICULTIES[number]>('medium');
   const clueListRef = useRef<HTMLDivElement>(null);
   const hasFetched = useRef(false);
@@ -27,8 +27,16 @@ export default function GameCrossword() {
   // ── Fetch puzzle ───────────────────────────────────────────────────────────
   const loadPuzzle = useCallback(async (t?: string, d?: typeof DIFFICULTIES[number]) => {
     dispatch({ type: 'CROSSWORD_RESTART' });
+    
+    // If 'random', pick a real theme from the list
+    let finalTheme = t;
+    if (t === 'random') {
+      const realThemes = THEMES.filter(x => x !== 'random');
+      finalTheme = realThemes[Math.floor(Math.random() * realThemes.length)];
+    }
+
     try {
-      const puzzle = await fetchCrosswordPuzzle({ theme: t, difficulty: d });
+      const puzzle = await fetchCrosswordPuzzle({ theme: finalTheme, difficulty: d });
       dispatch({ type: 'CROSSWORD_LOAD_PUZZLE', puzzle });
     } catch (e) {
       dispatch({ type: 'CROSSWORD_LOAD_ERROR', error: (e as Error).message ?? 'Failed to fetch puzzle' });
@@ -281,7 +289,7 @@ export default function GameCrossword() {
                 {cell.number && <span className="cw-cell-num">{cell.number}</span>}
                 {!cell.isBlocked && (
                   <span 
-                    key={cell.letter} // Triggers pop animation on change
+                    key={cell.letter}
                     className="cw-cell-letter"
                   >
                     {cell.letter}
