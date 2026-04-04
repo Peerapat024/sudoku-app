@@ -4,7 +4,7 @@ import { fetchCrosswordPuzzle } from '../../../lib/crossword';
 import { CrosswordClue } from '../../../types';
 import './GameCrossword.css';
 
-const THEMES = ['random', 'animals', 'food', 'sports', 'science', 'history', 'geography', 'music', 'movies', 'technology', 'nature', 'literature', 'art', 'travel'];
+const THEMES = ['random', 'animals', 'food', 'sports', 'science', 'history', 'geography', 'music', 'movies', 'technology'];
 const DIFFICULTIES = ['easy', 'medium', 'hard'] as const;
 
 // ── Haptic feedback helper ──────────────────────────────────────────────────
@@ -39,7 +39,8 @@ export default function GameCrossword() {
       const puzzle = await fetchCrosswordPuzzle({ theme: finalTheme, difficulty: d });
       dispatch({ type: 'CROSSWORD_LOAD_PUZZLE', puzzle });
     } catch (e) {
-      dispatch({ type: 'CROSSWORD_LOAD_ERROR', error: (e as Error).message ?? 'Failed to fetch puzzle' });
+      const msg = `Theme [${finalTheme}] error: ${(e as Error).message}`;
+      dispatch({ type: 'CROSSWORD_LOAD_ERROR', error: msg });
     }
   }, [dispatch]);
 
