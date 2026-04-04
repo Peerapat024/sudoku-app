@@ -15,12 +15,14 @@ export default function GameCrossword() {
   const [selectedDifficulty, setSelectedDifficulty] = useState<typeof DIFFICULTIES[number]>('medium');
   const clueListRef = useRef<HTMLDivElement>(null);
   const hasFetched = useRef(false);
+  // Hidden input ref for native mobile keyboard
+  const hiddenInputRef = useRef<HTMLInputElement>(null);
 
   // ── Fetch puzzle ───────────────────────────────────────────────────────────
-  const loadPuzzle = useCallback(async (theme?: string, difficulty?: typeof DIFFICULTIES[number]) => {
-    dispatch({ type: 'CROSSWORD_RESTART' }); // reset to loading state
+  const loadPuzzle = useCallback(async (t?: string, d?: typeof DIFFICULTIES[number]) => {
+    dispatch({ type: 'CROSSWORD_RESTART' });
     try {
-      const puzzle = await fetchCrosswordPuzzle({ theme, difficulty });
+      const puzzle = await fetchCrosswordPuzzle({ theme: t, difficulty: d });
       dispatch({ type: 'CROSSWORD_LOAD_PUZZLE', puzzle });
     } catch (e) {
       dispatch({ type: 'CROSSWORD_LOAD_ERROR', error: (e as Error).message ?? 'Failed to fetch puzzle' });
@@ -33,6 +35,13 @@ export default function GameCrossword() {
       loadPuzzle(selectedTheme, selectedDifficulty);
     }
   }, [isLoading, grid.length, loadPuzzle, selectedTheme, selectedDifficulty]);
+
+  // ── Focus hidden input whenever a cell is selected ────────────────────────
+  useEffect(() => {
+    if (selectedCell && hiddenInputRef.current) {
+      hiddenInputRef.current.focus({ preventScroll: true });
+    }
+  }, [selectedCell]);
 
   // ── Active clue derivation ────────────────────────────────────────────────
   useEffect(() => {
@@ -48,15 +57,39 @@ export default function GameCrossword() {
     });
     setActiveClue(found ?? null);
 
-    // Scroll active clue into view
     if (found) {
       const el = document.getElementById(`clue-${found.direction}-${found.number}`);
       el?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     }
   }, [selectedCell, direction, acrossClues, downClues]);
 
-  // ── Keyboard handling ─────────────────────────────────────────────────────
+  // ── Hidden input: handles mobile letter input ─────────────────────────────
+  const handleHiddenInput = useCallback((e: React.FormEvent<HTMLInputElement>) => {
+    const val = e.currentTarget.value;
+    if (!val) return;
+    const letter = val[val.length - 1];
+    if (letter && letter.match(/[a-zA-Z]/)) {
+      dispatch({ type: 'CROSSWORD_SET_LETTER', letter: letter.toUpperCase() });
+    }
+    // Reset so the next keystroke is always captured fresh
+    e.currentTarget.value = '';
+  }, [dispatch]);
+
+  const handleHiddenKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (isWin || isLoading) return;
+    if (e.key === 'Backspace') {
+      dispatch({ type: 'CROSSWORD_DELETE' });
+      e.preventDefault();
+    } else if (e.key === 'ArrowUp') { e.preventDefault(); dispatch({ type: 'CROSSWORD_MOVE_CURSOR', direction: 'up' }); }
+    else if (e.key === 'ArrowDown') { e.preventDefault(); dispatch({ type: 'CROSSWORD_MOVE_CURSOR', direction: 'down' }); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); dispatch({ type: 'CROSSWORD_MOVE_CURSOR', direction: 'left' }); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); dispatch({ type: 'CROSSWORD_MOVE_CURSOR', direction: 'right' }); }
+    else if (e.key === 'Tab') { e.preventDefault(); dispatch({ type: 'CROSSWORD_TOGGLE_DIRECTION' }); }
+  }, [dispatch, isWin, isLoading]);
+
+  // ── Desktop keyboard fallback (window-level) ──────────────────────────────
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (document.activeElement === hiddenInputRef.current) return;
     if (isWin || isLoading) return;
     if (e.key === 'ArrowUp') { e.preventDefault(); dispatch({ type: 'CROSSWORD_MOVE_CURSOR', direction: 'up' }); }
     else if (e.key === 'ArrowDown') { e.preventDefault(); dispatch({ type: 'CROSSWORD_MOVE_CURSOR', direction: 'down' }); }
@@ -78,18 +111,15 @@ export default function GameCrossword() {
   function getCellClass(r: number, c: number): string {
     const cell = grid[r][c];
     if (cell.isBlocked) return 'cw-cell blocked';
-
     const isSelected = selectedCell?.[0] === r && selectedCell?.[1] === c;
     let isWordHighlight = false;
     if (selectedCell && activeClue) {
-      const [, ] = selectedCell;
       if (direction === 'across') {
         isWordHighlight = r === activeClue.row && c >= activeClue.col && c < activeClue.col + activeClue.answer.length;
       } else {
         isWordHighlight = c === activeClue.col && r >= activeClue.row && r < activeClue.row + activeClue.answer.length;
       }
     }
-
     return [
       'cw-cell',
       isSelected ? 'selected' : '',
@@ -99,10 +129,18 @@ export default function GameCrossword() {
     ].filter(Boolean).join(' ');
   }
 
+  // ── Cell tap: select + focus hidden input ─────────────────────────────────
+  function handleCellTap(r: number, c: number) {
+    if (grid[r][c].isBlocked) return;
+    dispatch({ type: 'CROSSWORD_SELECT_CELL', row: r, col: c });
+    hiddenInputRef.current?.focus({ preventScroll: true });
+  }
+
   // ── Clue click ────────────────────────────────────────────────────────────
   function handleClueClick(clue: CrosswordClue) {
     if (direction !== clue.direction) dispatch({ type: 'CROSSWORD_TOGGLE_DIRECTION' });
     dispatch({ type: 'CROSSWORD_SELECT_CELL', row: clue.row, col: clue.col });
+    hiddenInputRef.current?.focus({ preventScroll: true });
   }
 
   // ── New game ──────────────────────────────────────────────────────────────
@@ -139,6 +177,26 @@ export default function GameCrossword() {
 
   return (
     <div className="game-crossword">
+      {/*
+        Hidden input — must use opacity:0 + position:fixed (NOT display:none)
+        so iOS/Android will actually focus it and show the native keyboard.
+        font-size:16px prevents iOS auto-zoom on focus.
+      */}
+      <input
+        ref={hiddenInputRef}
+        className="cw-hidden-input"
+        type="text"
+        inputMode="text"
+        autoComplete="off"
+        autoCorrect="off"
+        autoCapitalize="none"
+        spellCheck={false}
+        onInput={handleHiddenInput}
+        onKeyDown={handleHiddenKeyDown}
+        aria-label="Crossword letter input"
+        tabIndex={-1}
+      />
+
       {/* ── Controls bar ──────────────────────────────────────── */}
       <div className="cw-controls">
         <select
@@ -175,11 +233,15 @@ export default function GameCrossword() {
         </span>
       </div>
 
-      {/* ── Active clue ───────────────────────────────────────── */}
+      {/* ── Active clue — tap to re-open keyboard ─────────────── */}
       {activeClue && (
-        <div className="cw-active-clue">
+        <div
+          className="cw-active-clue"
+          onClick={() => hiddenInputRef.current?.focus({ preventScroll: true })}
+        >
           <span className="cw-active-clue-num">{activeClue.number}{activeClue.direction === 'across' ? 'A' : 'D'}</span>
           <span className="cw-active-clue-text">{activeClue.clue}</span>
+          <span className="cw-active-clue-tap">⌨️</span>
         </div>
       )}
 
@@ -195,7 +257,7 @@ export default function GameCrossword() {
               <div
                 key={`${r}-${c}`}
                 className={getCellClass(r, c)}
-                onClick={() => !cell.isBlocked && dispatch({ type: 'CROSSWORD_SELECT_CELL', row: r, col: c })}
+                onClick={() => handleCellTap(r, c)}
               >
                 {cell.number && <span className="cw-cell-num">{cell.number}</span>}
                 {!cell.isBlocked && <span className="cw-cell-letter">{cell.letter}</span>}
