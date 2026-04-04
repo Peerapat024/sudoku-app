@@ -186,6 +186,8 @@ export async function fetchCrosswordPuzzle(params?: {
   const response = await fetch(url.toString(), {
     headers: {
       'x-api-key': API_KEY,
+      'Cache-Control': 'no-cache',
+      'Pragma': 'no-cache',
     },
   });
 

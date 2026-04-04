@@ -4,7 +4,11 @@ import { fetchCrosswordPuzzle } from '../../../lib/crossword';
 import { CrosswordClue } from '../../../types';
 import './GameCrossword.css';
 
-const THEMES = ['random', 'animals', 'food', 'sports', 'science', 'history', 'geography', 'music', 'movies', 'technology'];
+const THEMES = [
+  'random', 'animals', 'food', 'sports', 'science', 'history', 'geography', 
+  'music', 'movies', 'technology', 'nature', 'space', 'health', 'travel', 
+  'literature', 'fashion', 'coding', 'business', 'weather', 'finance', 'gaming'
+];
 const DIFFICULTIES = ['easy', 'medium', 'hard'] as const;
 
 // ── Haptic feedback helper ──────────────────────────────────────────────────
