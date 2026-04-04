@@ -192,6 +192,9 @@ export async function fetchCrosswordPuzzle(params?: {
   });
 
   if (!response.ok) {
+    if (response.status === 429) {
+      throw new Error(`429: API Rate Limit reached. Please wait a minute and try again.`);
+    }
     throw new Error(`API error ${response.status}: ${response.statusText}`);
   }
 

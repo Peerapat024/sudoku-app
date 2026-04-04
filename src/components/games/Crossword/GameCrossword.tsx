@@ -198,14 +198,20 @@ export default function GameCrossword() {
     );
   }
 
-  if (error || grid.length === 0) {
+  // ── Error state ───────────────────────────────────────────────────────────
+  if (error && grid.length === 0) {
+    const isRateLimit = error.includes('429');
     return (
       <div className="crossword-error">
-        <div className="cw-error-icon">⚠️</div>
-        <h3>Couldn't load puzzle</h3>
-        <p>{error ?? 'No puzzle data returned.'}</p>
-        <p className="cw-error-hint">Make sure your API key is set in <code>VITE_CROSSWORD_API_KEY</code></p>
-        <button className="cw-btn primary" onClick={() => handleAction('NEW')}>Try Again</button>
+        <div className="cw-error-icon">{isRateLimit ? '⏳' : '⚠️'}</div>
+        <h3>{isRateLimit ? 'Rate Limit Reached' : "Couldn't load puzzle"}</h3>
+        <p>{error}</p>
+        {!isRateLimit && (
+          <p className="cw-error-hint">Make sure your API key is set in <code>VITE_CROSSWORD_API_KEY</code></p>
+        )}
+        <button className="cw-btn primary" onClick={() => handleAction('NEW')}>
+          {isRateLimit ? 'Try Again in 1 Minute' : 'Try Again'}
+        </button>
       </div>
     );
   }
